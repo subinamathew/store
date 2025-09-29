@@ -1,0 +1,165 @@
+[
+  {
+    "sku": "HERR-SHIRT-BLAU-001",
+    "name": "Athletisches Herren-T-Shirt",
+    "description": "Ein atmungsaktives T-Shirt für maximale Leistung. Ideal für Laufen und Training.",
+    "category": "Herren",
+    "subcategory": "Sportbekleidung",
+    "type": "T-Shirt",
+    "material": "Polyester",
+    "colors": ["Blau", "Schwarz", "Grau"],
+    "sizes": ["S", "M", "L", "XL"],
+    "stock": {
+      "S": 10,
+      "M": 15,
+      "L": 12,
+      "XL": 5
+    },
+    "image_url": "https://dummyimage.com/600x400/0000ff/ffffff.png&text=Herren-T-Shirt+Blau"
+  },
+  {
+    "sku": "DAMEN-YOGAH-002",
+    "name": "Damen-Yogahose",
+    "description": "Komfortable, dehnbare Hose perfekt für Yoga und Pilates.",
+    "category": "Damen",
+    "subcategory": "Sportbekleidung",
+    "type": "Hose",
+    "material": "Baumwolle-Elasthan",
+    "colors": ["Schwarz", "Lila"],
+    "sizes": ["XS", "S", "M", "L"],
+    "stock": {
+      "XS": 8,
+      "S": 20,
+      "M": 18,
+      "L": 7
+    },
+    "image_url": "https://dummyimage.com/600x400/000000/ffffff.png&text=Damen-Yogahose"
+  },
+  {
+    "sku": "UNISEX-SCHUH-003",
+    "name": "Unisex-Laufschuhe",
+    "description": "Leichte und reaktionsfreudige Schuhe für alle Läufertypen.",
+    "category": "Unisex",
+    "subcategory": "Schuhe",
+    "type": "Schuhe",
+    "material": "Synthetik",
+    "colors": ["Rot", "Blau", "Grün"],
+    "sizes": ["38", "39", "40", "41", "42", "43", "44"],
+    "stock": {
+      "38": 5,
+      "39": 10,
+      "40": 15,
+      "41": 12,
+      "42": 8,
+      "43": 6,
+      "44": 3
+    },
+    "image_url": "https://dummyimage.com/600x400/ff0000/ffffff.png&text=Unisex-Laufschuhe"
+  },
+  {
+    "sku": "DAMEN-JACKE-004",
+    "name": "Damen-Regenjacke",
+    "description": "Leichte, wasserdichte Jacke für Outdoor-Aktivitäten.",
+    "category": "Damen",
+    "subcategory": "Sportbekleidung",
+    "type": "Jacke",
+    "material": "Nylon",
+    "colors": ["Pink", "Gelb"],
+    "sizes": ["S", "M", "L"],
+    "stock": {
+      "S": 5,
+      "M": 10,
+      "L": 8
+    },
+    "image_url": "https://dummyimage.com/600x400/ff69b4/ffffff.png&text=Damen-Regenjacke"
+  },
+  {
+    "sku": "HERR-HOODIE-005",
+    "name": "Herren-Trainingshoodie",
+    "description": "Warmer Hoodie aus Fleece für das Aufwärmen.",
+    "category": "Herren",
+    "subcategory": "Sportbekleidung",
+    "type": "Hoodie",
+    "material": "Fleece",
+    "colors": ["Grau", "Schwarz"],
+    "sizes": ["M", "L", "XL"],
+    "stock": {
+      "M": 15,
+      "L": 20,
+      "XL": 10
+    },
+    "image_url": "https://dummyimage.com/600x400/808080/ffffff.png&text=Herren-Hoodie"
+  },
+  {
+    "sku": "UNISEX-FLASCH-006",
+    "name": "Trinkflasche",
+    "description": "Robuste, BPA-freie Trinkflasche für den Sport.",
+    "category": "Zubehör",
+    "subcategory": "Zubehör",
+    "type": "Flasche",
+    "material": "Kunststoff",
+    "colors": ["Klar", "Blau", "Grün"],
+    "sizes": ["750ml", "1000ml"],
+    "stock": {
+      "750ml": 50,
+      "1000ml": 30
+    },
+    "image_url": "https://dummyimage.com/600x400/add8e6/000000.png&text=Trinkflasche"
+  },
+  {
+    "sku": "UNISEX-BAND-007",
+    "name": "Widerstandsband-Set",
+    "description": "Set mit 3 Bändern in verschiedenen Stärken für das Krafttraining.",
+    "category": "Zubehör",
+    "subcategory": "Zubehör",
+    "type": "Widerstandsband",
+    "material": "Gummi",
+    "colors": ["Rot", "Grün", "Blau"],
+    "sizes": ["Leicht", "Mittel", "Schwer"],
+    "stock": {
+      "Leicht": 25,
+      "Mittel": 25,
+      "Schwer": 25
+    },
+    "image_url": "https://dummyimage.com/600x400/800080/ffffff.png&text=Widerstandsband"
+  },
+  {
+    "sku": "UNISEX-SCHUH-008",
+    "name": "Unisex-Wanderschuhe",
+    "description": "Strapazierfähige Schuhe für Wanderungen in leichtem Gelände.",
+    "category": "Unisex",
+    "subcategory": "Schuhe",
+    "type": "Schuhe",
+    "material": "Leder-Mischung",
+    "colors": ["Braun", "Schwarz"],
+    "sizes": ["39", "40", "41", "42", "43", "44", "45"],
+    "stock": {
+      "39": 4,
+      "40": 8,
+      "41": 15,
+      "42": 10,
+      "43": 7,
+      "44": 5,
+      "45": 2
+    },
+    "image_url": "https://dummyimage.com/600x400/8b4513/ffffff.png&text=Wanderschuhe"
+  },
+  {
+    "sku": "DAMEN-LEGG-009",
+    "name": "Damen-Sportleggings",
+    "description": "Atmungsaktive Leggings mit hohem Bund für alle Sportarten.",
+    "category": "Damen",
+    "subcategory": "Sportbekleidung",
+    "type": "Leggings",
+    "material": "Elasthan",
+    "colors": ["Dunkelblau", "Schwarz"],
+    "sizes": ["XS", "S", "M", "L"],
+    "stock": {
+      "XS": 12,
+      "S": 18,
+      "M": 20,
+      "L": 10
+    },
+    "image_url": "https://dummyimage.com/600x400/191970/ffffff.png&text=Damen-Leggings"
+  }
+]

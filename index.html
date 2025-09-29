@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sportwaren Gallerie</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <header>
+        <h1>Sportwaren Galerie</h1>
+    </header>
+
+    <nav class="categories">
+        <a href="#" class="category-link" data-category="Alle">Alle Produkte</a>
+        <a href="#" class="category-link" data-category="Herren">Herren</a>
+        <a href="#" class="category-link" data-category="Damen">Damen</a>
+        <a href="#" class="category-link" data-category="Unisex">Unisex</a>
+        <a href="#" class="category-link" data-category="Zubehör">Zubehör</a>
+    </nav>
+
+    <main class="container">
+        <aside class="filters">
+            <h2>Filter</h2>
+            <div class="filter-group">
+                <label for="color-filter">Farbe:</label>
+                <select id="color-filter">
+                    <option value="">Alle</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="size-filter">Größe:</label>
+                <select id="size-filter">
+                    <option value="">Alle</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="stock-filter">Verfügbarkeit:</label>
+                <select id="stock-filter">
+                    <option value="">Alle</option>
+                    <option value="in-stock">Auf Lager</option>
+                </select>
+            </div>
+            <button id="reset-filters">Filter zurücksetzen</button>
+        </aside>
+
+        <section id="product-gallery" class="gallery-grid"></section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
