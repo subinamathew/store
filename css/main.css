@@ -9,7 +9,7 @@ body {
 
 .container {
     display: flex;
-    flex-direction: column; /* Stacks items vertically by default for mobile */
+    flex-direction: column; /* This is the key change for mobile. Stacks items vertically. */
     max-width: 1200px;
     margin: 20px auto;
     padding: 0 15px;
@@ -27,7 +27,7 @@ header {
 .categories {
     display: flex;
     justify-content: center;
-    flex-wrap: wrap; /* Allows links to wrap to the next line on small screens */
+    flex-wrap: wrap; /* This makes the links wrap to a new line on smaller screens. */
     text-align: center;
     padding: 1rem 0.5rem;
     background-color: #e2e2e2;
@@ -42,7 +42,7 @@ header {
     padding: 0.5rem 0.75rem;
     border-radius: 5px;
     transition: background-color 0.3s;
-    white-space: nowrap; /* Prevents links from breaking */
+    white-space: nowrap;
 }
 
 .category-link:hover,
@@ -56,7 +56,7 @@ header {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    align-self: stretch; /* Stretches to fill the container on mobile */
+    align-self: stretch;
 }
 
 .filter-group {
@@ -75,72 +75,10 @@ header {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box; /* Ensures padding doesn't affect total width */
+    box-sizing: border-box;
     font-size: 1rem;
 }
 
 #reset-filters {
     margin-top: 10px;
-    background-color: #555;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-#reset-filters:hover {
-    background-color: #777;
-}
-
-/* Product Gallery Grid */
-.gallery-grid {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.product-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.product-card img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    display: block;
-}
-
-.product-details {
-    padding: 15px;
-}
-
-.product-details h3 {
-    margin: 0 0 10px;
-    font-size: 1.2rem;
-    color: #007bff;
-}
-
-.product-details p {
-    margin: 5px 0;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-/* Media Query for Tablets and Desktops */
-@media (min-width: 768px) {
-    .container {
-        flex-direction: row; /* Arranges items side-by-side on larger screens */
-    }
-
-    .filters {
-        width: 250px;
-        flex-shrink: 0; /* Prevents the sidebar from shrinking */
-        align-self: flex-start; /* Keeps the sidebar at the top */
-    }
-}
+    background-color: #5
