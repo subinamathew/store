@@ -5,6 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const stockFilter = document.getElementById('stock-filter');
     const categoryLinks = document.querySelectorAll('.category-link');
     const resetButton = document.getElementById('reset-filters');
+    
+    // New elements for file management
+    const fileInput = document.getElementById('upload-json');
+    const downloadButton = document.getElementById('download-json');
+    
     let productsData = [];
 
     // Helper function to render a single product card
@@ -47,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
             p.sizes.forEach(s => sizes.add(s));
         });
 
+        colorFilter.innerHTML = '<option value="">Alle</option>';
+        sizeFilter.innerHTML = '<option value="">Alle</option>';
+
         colors.forEach(c => {
             const option = document.createElement('option');
             option.value = c;
@@ -84,6 +92,41 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredProducts.forEach(renderProduct);
         }
     };
+
+    // --- File Management Functions ---
+    // Event listener for uploading a JSON file
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    productsData = JSON.parse(e.target.result);
+                    populateFilters(productsData);
+                    renderFilteredProducts(productsData);
+                    alert('Produktdaten erfolgreich hochgeladen!');
+                } catch (error) {
+                    alert('Fehler beim Parsen der JSON-Datei. Bitte stellen Sie sicher, dass die Datei gültig ist.');
+                    console.error('JSON-Parsing-Fehler:', error);
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Event listener for downloading a JSON file
+    downloadButton.addEventListener('click', () => {
+        const jsonString = JSON.stringify(productsData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'products.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
 
     // Event Listeners for Filters
     colorFilter.addEventListener('change', () => renderFilteredProducts(productsData, document.querySelector('.category-link.active')?.dataset.category));
