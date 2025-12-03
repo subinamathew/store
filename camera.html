@@ -298,6 +298,26 @@
       }
     };
 
+    /********** English display names for item types / Englische Namen **********/
+    const typeDisplayNames = {
+      "Socken": "Socken / Socks",
+      "Handschuhe": "Handschuhe / Gloves",
+      "Mütze/Schal": "Mütze/Schal / Beanie & Scarf",
+      "Handyhalter": "Handyhalter / Phone holder",
+      "Karategürtel": "Karategürtel / Karate belt",
+      "Taschen": "Taschen / Bags",
+      "Judo": "Judo / Judo gear",
+      "Cappy": "Cappy / Cap",
+      "Schuhe": "Schuhe / Shoes",
+      "Gymnastik (Tops & Leggings)": "Gymnastik (Tops & Leggings) / Gym (tops & leggings)",
+      "Leibchen": "Leibchen / Training bib",
+      "Oberteile": "Oberteile / Tops",
+      "Unterteile": "Unterteile / Bottoms",
+      "Sport-BHs": "Sport-BHs / Sports bras",
+      "Badeanzüge": "Badeanzüge / Swimsuits",
+      "Bikini": "Bikini / Bikinis"
+    };
+
     /********** Product templates / Produkt-Vorlagen **********/
     const productTemplates = {
       "Accessoires & Ausrüstung": {
@@ -463,8 +483,8 @@
       const types = Object.keys(productTemplates[category]);
       types.forEach(typeName => {
         const opt = document.createElement('option');
-        opt.value = typeName;
-        opt.textContent = typeName;
+        opt.value = typeName; // keep German key for logic
+        opt.textContent = typeDisplayNames[typeName] || typeName;
         itemTypeSelect.appendChild(opt);
       });
     }
@@ -599,7 +619,7 @@
         itemTypeSelect.selectedIndex = currentIndex + 1;
         itemTypeSelect.dispatchEvent(new Event('change'));
       } else {
-        // stay on last item type or keep selection
+        // last type, no auto-reset for now
       }
     }
 
@@ -632,10 +652,10 @@
       imageUrlInput.value = imageUrl;
 
       const template = productTemplates[category][itemType] || {
-        name: itemType,
+        name: typeDisplayNames[itemType] || itemType,
         description: "",
         subcategory: category,
-        type: itemType,
+        type: typeDisplayNames[itemType] || itemType,
         material: "",
         colors: [...baseColors]
       };
