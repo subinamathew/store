@@ -96,7 +96,7 @@
       width: 100%;
       padding: 0.6rem 0.7rem;
       border-radius: 8px;
-      border: 1px solid #d1d5db;
+      border: 1px solid #d0d7de;
       font-size: 1rem;
       background: #f9fafb;
     }
@@ -143,7 +143,7 @@
       width: 100%;
       padding: 0.6rem 0.7rem;
       border-radius: 8px;
-      border: 1px solid #d1d5db;
+      border: 1px solid #d0d7de;
       font-size: 0.8rem;
       background: #0b1020;
       color: #e5e7eb;
@@ -160,6 +160,32 @@
 
     .top-controls button {
       flex: 1 1 48%;
+    }
+
+    .color-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.3rem;
+    }
+
+    .color-btn {
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .color-btn.selected {
+      background: var(--primary);
+      color: var(--primary-text);
+      border-color: var(--primary);
     }
 
     @media (min-width: 640px) {
@@ -184,7 +210,7 @@
 </head>
 <body>
   <main>
-    <!-- NEW: Top Back + Refresh -->
+    <!-- Top Back + Refresh -->
     <div class="top-controls">
       <button id="backBtn" class="secondary">⬅ Back / Zurück</button>
       <button id="refreshBtn">🔄 Refresh / Neu laden</button>
@@ -192,10 +218,10 @@
 
     <h1>Product Photo & JSON / Produkt-Foto & JSON</h1>
     <p class="lead">
-      Start camera once, select category & item type, check quantity, then just hold the item in front
-      of the camera and tap “Save all” for each product. The app auto-jumps to the next item type.<br />
-      Kamera einmal starten, Kategorie & Artikeltyp wählen, Menge prüfen, dann Artikel vor die Kamera halten
-      und für jedes Produkt nur noch „Alles speichern“ tippen. Die App springt automatisch zum nächsten Artikeltyp.<br />
+      Start camera once, select category & item type, set quantity, size & colours, then hold the item in front
+      of the camera and tap “Save all”. The app auto-jumps to the next item type.<br />
+      Kamera einmal starten, Kategorie & Artikeltyp wählen, Menge, Größe & Farben setzen, Artikel vor die Kamera halten
+      und „Alles speichern“ tippen. Die App springt automatisch zum nächsten Artikeltyp.<br />
       <strong>Photo file name / Bildname = SKU.png, image_url = SKU.png</strong>
     </p>
 
@@ -257,6 +283,26 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="field">
+          <label for="sizeInput">Size / Größe</label>
+          <input type="text" id="sizeInput" placeholder="e.g. M, 40, OneSize" />
+          <small>
+            Used to fill the <code>sizes</code> array in JSON (single value).<br />
+            Wird für das <code>sizes</code>-Array im JSON verwendet (ein Wert).
+          </small>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Colours / Farben (multi-select)</label>
+        <div id="colorButtonsContainer" class="color-buttons"></div>
+        <small>
+          Tap to select one or more colours. If none selected, template colours are used.<br />
+          Tippe, um eine oder mehrere Farben zu wählen. Ohne Auswahl werden die Standardfarben verwendet.
+        </small>
+      </div>
+
       <div class="field">
         <label for="imageUrlInput">image_url</label>
         <input type="text" id="imageUrlInput" placeholder="will be set to SKU.png / wird automatisch auf SKU.png gesetzt" />
@@ -279,18 +325,21 @@
   </main>
 
   <script>
-    /********** Base colors: black, white & rainbow / Basis-Farben **********/
-    const baseColors = [
-      "Schwarz / Black",
-      "Weiß / White",
-      "Rot / Red",
-      "Orange",
-      "Gelb / Yellow",
-      "Grün / Green",
-      "Blau / Blue",
-      "Indigo",
-      "Violett / Violet"
+    /********** Colour options: rainbow (VIGBYOR) + grey/white/black **********/
+    const colorOptions = [
+      { id: "violet", label: "Violett / Violet" },
+      { id: "indigo", label: "Indigo" },
+      { id: "blue", label: "Blau / Blue" },
+      { id: "green", label: "Grün / Green" },
+      { id: "yellow", label: "Gelb / Yellow" },
+      { id: "orange", label: "Orange" },
+      { id: "red", label: "Rot / Red" },
+      { id: "gray", label: "Grau / Grey" },
+      { id: "white", label: "Weiß / White" },
+      { id: "black", label: "Schwarz / Black" },
     ];
+
+    const baseColors = colorOptions.map(o => o.label);
 
     /********** Expected quantities per type / Erwartete Mengen **********/
     const defaultQuantities = {
@@ -476,11 +525,13 @@
     const itemTypeSelect = document.getElementById('itemTypeSelect');
     const quantityInput = document.getElementById('quantityInput');
     const skuInput = document.getElementById('skuInput');
+    const sizeInput = document.getElementById('sizeInput');
     const imageUrlInput = document.getElementById('imageUrlInput');
     const jsonOutput = document.getElementById('jsonOutput');
     const saveAllBtn = document.getElementById('saveAllBtn');
     const backBtn = document.getElementById('backBtn');
     const refreshBtn = document.getElementById('refreshBtn');
+    const colorButtonsContainer = document.getElementById('colorButtonsContainer');
 
     let skuDirty = false;
 
@@ -489,7 +540,6 @@
       if (window.history.length > 1) {
         window.history.back();
       } else {
-        // If no history, just reload as a soft "back"
         location.reload();
       }
     });
@@ -497,6 +547,27 @@
     refreshBtn.addEventListener('click', () => {
       location.reload();
     });
+
+    /********** Colour button init **********/
+    function initColorButtons() {
+      colorButtonsContainer.innerHTML = "";
+      colorOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = "color-btn";
+        btn.textContent = opt.label;
+        btn.dataset.colorLabel = opt.label;
+        btn.addEventListener('click', () => {
+          btn.classList.toggle('selected');
+        });
+        colorButtonsContainer.appendChild(btn);
+      });
+    }
+
+    function getSelectedColors() {
+      return Array.from(document.querySelectorAll('.color-btn.selected'))
+        .map(btn => btn.dataset.colorLabel);
+    }
 
     function populateItemTypes(category) {
       itemTypeSelect.innerHTML = '';
@@ -517,7 +588,7 @@
       const types = Object.keys(productTemplates[category]);
       types.forEach(typeName => {
         const opt = document.createElement('option');
-        opt.value = typeName; // keep German key
+        opt.value = typeName;
         opt.textContent = typeDisplayNames[typeName] || typeName;
         itemTypeSelect.appendChild(opt);
       });
@@ -614,7 +685,7 @@
     function captureFrame(onSuccess) {
       if (!mediaStream) {
         alert('Please start the camera first.\nBitte zuerst die Kamera starten.');
-        return;
+      return;
       }
       const videoTrack = mediaStream.getVideoTracks()[0];
       const settings = videoTrack.getSettings();
@@ -680,6 +751,11 @@
       const qty = parseInt(quantityInput.value, 10);
       const finalQty = isNaN(qty) ? 0 : qty;
 
+      const sizeValue = sizeInput.value.trim();
+      const sizesArray = sizeValue ? [sizeValue] : ["OneSize"];
+
+      const selectedColors = getSelectedColors();
+
       const sanitizedSku = sku.replace(/\s+/g, '-');
       const photoFileName = sanitizedSku + '.png';
       const imageUrl = photoFileName;
@@ -709,8 +785,8 @@
           subcategory: template.subcategory,
           type: template.type,
           material: template.material,
-          colors: template.colors,
-          sizes: ["OneSize"],
+          colors: selectedColors.length ? selectedColors : template.colors,
+          sizes: sizesArray,
           stock: {
             "OneSize": finalQty
           },
@@ -748,6 +824,9 @@
 
     /********** Init defaults for everything on load **********/
     function initDefaults() {
+      // default size
+      sizeInput.value = "OneSize";
+
       // Default category: first real one (Accessoires & Ausrüstung)
       if (categorySelect.options.length > 1) {
         categorySelect.selectedIndex = 1;
@@ -761,7 +840,8 @@
       }
     }
 
-    // Script is at the bottom; DOM is ready → call immediately
+    // init color buttons + defaults
+    initColorButtons();
     initDefaults();
   </script>
 </body>
