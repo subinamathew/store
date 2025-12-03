@@ -150,6 +150,18 @@
       min-height: 220px;
     }
 
+    .top-controls {
+      display: flex;
+      gap: 0.75rem;
+      margin: 0 0 0.75rem;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .top-controls button {
+      flex: 1 1 48%;
+    }
+
     @media (min-width: 640px) {
       .row .field {
         flex: 1 1 calc(50% - 0.5rem);
@@ -172,6 +184,12 @@
 </head>
 <body>
   <main>
+    <!-- NEW: Top Back + Refresh -->
+    <div class="top-controls">
+      <button id="backBtn" class="secondary">⬅ Back / Zurück</button>
+      <button id="refreshBtn">🔄 Refresh / Neu laden</button>
+    </div>
+
     <h1>Product Photo & JSON / Produkt-Foto & JSON</h1>
     <p class="lead">
       Start camera once, select category & item type, check quantity, then just hold the item in front
@@ -461,8 +479,24 @@
     const imageUrlInput = document.getElementById('imageUrlInput');
     const jsonOutput = document.getElementById('jsonOutput');
     const saveAllBtn = document.getElementById('saveAllBtn');
+    const backBtn = document.getElementById('backBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
 
     let skuDirty = false;
+
+    /********** Top buttons **********/
+    backBtn.addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // If no history, just reload as a soft "back"
+        location.reload();
+      }
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      location.reload();
+    });
 
     function populateItemTypes(category) {
       itemTypeSelect.innerHTML = '';
@@ -483,7 +517,7 @@
       const types = Object.keys(productTemplates[category]);
       types.forEach(typeName => {
         const opt = document.createElement('option');
-        opt.value = typeName; // keep German key for logic
+        opt.value = typeName; // keep German key
         opt.textContent = typeDisplayNames[typeName] || typeName;
         itemTypeSelect.appendChild(opt);
       });
@@ -602,7 +636,7 @@
       }, 'image/png');
     }
 
-    // Optional preview button (no JSON)
+    // Optional preview-only button
     captureBtn.addEventListener('click', () => {
       captureFrame((blob) => {
         capturedImageBlob = blob;
@@ -619,7 +653,7 @@
         itemTypeSelect.selectedIndex = currentIndex + 1;
         itemTypeSelect.dispatchEvent(new Event('change'));
       } else {
-        // last type, no auto-reset for now
+        // last type, do nothing
       }
     }
 
@@ -711,6 +745,24 @@
         advanceToNextItemType();
       });
     });
+
+    /********** Init defaults for everything on load **********/
+    function initDefaults() {
+      // Default category: first real one (Accessoires & Ausrüstung)
+      if (categorySelect.options.length > 1) {
+        categorySelect.selectedIndex = 1;
+        categorySelect.dispatchEvent(new Event('change'));
+
+        // After types are populated, choose first real item type
+        if (itemTypeSelect.options.length > 1) {
+          itemTypeSelect.selectedIndex = 1;
+          itemTypeSelect.dispatchEvent(new Event('change'));
+        }
+      }
+    }
+
+    // Script is at the bottom; DOM is ready → call immediately
+    initDefaults();
   </script>
 </body>
 </html>
