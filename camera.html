@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Einfache Produkt-App (Mobile)</title>
+  <title>Produkt-Foto & JSON (One Button)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
@@ -172,10 +172,10 @@
 </head>
 <body>
   <main>
-    <h1>Produkt-Foto & JSON (Mobile)</h1>
+    <h1>Produkt-Foto & JSON</h1>
     <p class="lead">
-      Wähle Kategorie & Artikeltyp, trage eine Menge ein, mache ein Foto mit der Rückkamera
-      und lade JSON + Bild herunter.
+      Kategorie & Artikeltyp wählen, Menge eintragen, Foto mit der Rückkamera machen
+      und mit einem Button Bild + JSON speichern.
     </p>
 
     <!-- Kamera / Foto -->
@@ -186,7 +186,6 @@
       <div class="controls">
         <button id="startCamBtn">📷 Kamera (Rückseite) starten</button>
         <button id="captureBtn" disabled>📸 Foto aufnehmen</button>
-        <button id="downloadPhotoBtn" disabled class="secondary">⬇️ Foto speichern</button>
       </div>
       <small>
         Tipp: Auf dem Smartphone am besten über HTTPS öffnen, sonst blocken manche Browser die Kamera.
@@ -237,8 +236,7 @@
       </div>
 
       <div class="controls">
-        <button id="generateJsonBtn">🧾 JSON erzeugen</button>
-        <button id="downloadJsonBtn" disabled class="secondary">⬇️ JSON speichern</button>
+        <button id="saveAllBtn">💾 Alles speichern (Foto + JSON)</button>
       </div>
     </section>
 
@@ -392,10 +390,9 @@
     const skuInput = document.getElementById('skuInput');
     const imageUrlInput = document.getElementById('imageUrlInput');
     const jsonOutput = document.getElementById('jsonOutput');
-    const generateJsonBtn = document.getElementById('generateJsonBtn');
-    const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+    const saveAllBtn = document.getElementById('saveAllBtn');
 
-    let skuDirty = false; // ob Nutzer SKU manuell geändert hat
+    let skuDirty = false;
 
     function populateItemTypes(category) {
       itemTypeSelect.innerHTML = '';
@@ -461,7 +458,6 @@
     const canvas = document.getElementById('canvas');
     const startCamBtn = document.getElementById('startCamBtn');
     const captureBtn = document.getElementById('captureBtn');
-    const downloadPhotoBtn = document.getElementById('downloadPhotoBtn');
     const photoPreview = document.getElementById('photoPreview');
 
     let mediaStream = null;
@@ -469,7 +465,6 @@
     let capturedImageFilename = null;
 
     async function startCameraWithBackFacing() {
-      // bevorzugt Rückkamera (environment), fallback auf Standardkamera
       const envConstraints = {
         video: {
           facingMode: { ideal: "environment" }
@@ -488,7 +483,6 @@
     startCamBtn.addEventListener('click', async () => {
       try {
         if (mediaStream) {
-          // Falls bereits läuft, erst stoppen
           mediaStream.getTracks().forEach(t => t.stop());
         }
         await startCameraWithBackFacing();
@@ -501,7 +495,10 @@
 
     // Foto aufnehmen
     captureBtn.addEventListener('click', () => {
-      if (!mediaStream) return;
+      if (!mediaStream) {
+        alert('Bitte zuerst die Kamera starten.');
+        return;
+      }
 
       const videoTrack = mediaStream.getVideoTracks()[0];
       const settings = videoTrack.getSettings();
@@ -529,30 +526,12 @@
 
         imageUrlInput.value = capturedImageFilename;
 
-        downloadPhotoBtn.disabled = false;
-        alert('Foto aufgenommen! Jetzt kannst du es speichern.');
+        alert('Foto aufgenommen! Beim Speichern wird dieses Bild verwendet.');
       }, 'image/png');
     });
 
-    // Foto speichern
-    downloadPhotoBtn.addEventListener('click', () => {
-      if (!capturedImageBlob || !capturedImageFilename) {
-        alert('Bitte zuerst ein Foto aufnehmen.');
-        return;
-      }
-
-      const a = document.createElement('a');
-      const url = URL.createObjectURL(capturedImageBlob);
-      a.href = url;
-      a.download = capturedImageFilename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-
-    /********** JSON-Erzeugung **********/
-    generateJsonBtn.addEventListener('click', () => {
+    /********** JSON + Bild speichern (ein Button) **********/
+    saveAllBtn.addEventListener('click', () => {
       const category = categorySelect.value;
       const itemType = itemTypeSelect.value;
 
@@ -566,11 +545,23 @@
       }
 
       const qty = parseInt(quantityInput.value, 10) || 0;
-      const sku = skuInput.value.trim() || generateSku(category, itemType);
+      let sku = skuInput.value.trim();
+      if (!sku) {
+        sku = generateSku(category, itemType);
+        skuInput.value = sku;
+      }
 
+      // sicherstellen, dass ein Foto existiert
+      if (!capturedImageBlob) {
+        alert('Bitte zuerst ein Foto aufnehmen, bevor du speicherst.');
+        return;
+      }
+
+      // Bild-Dateiname & image_url
+      capturedImageFilename = sku.replace(/\s+/g, '-') + '.png';
       let imageUrl = imageUrlInput.value.trim();
       if (!imageUrl) {
-        imageUrl = sku.replace(/\s+/g, '-') + '.png';
+        imageUrl = capturedImageFilename;
         imageUrlInput.value = imageUrl;
       }
 
@@ -599,29 +590,29 @@
         image_url: imageUrl
       };
 
-      jsonOutput.value = JSON.stringify([product], null, 2);
-      downloadJsonBtn.disabled = false;
-    });
+      const jsonString = JSON.stringify([product], null, 2);
+      jsonOutput.value = jsonString;
 
-    // JSON speichern
-    downloadJsonBtn.addEventListener('click', () => {
-      if (!jsonOutput.value.trim()) {
-        alert('Bitte zuerst JSON erzeugen.');
-        return;
-      }
+      // JSON speichern
+      const jsonBlob = new Blob([jsonString], { type: 'application/json' });
+      const jsonUrl = URL.createObjectURL(jsonBlob);
+      const jsonLink = document.createElement('a');
+      jsonLink.href = jsonUrl;
+      jsonLink.download = sku.replace(/\s+/g, '-') + '.json';
+      document.body.appendChild(jsonLink);
+      jsonLink.click();
+      document.body.removeChild(jsonLink);
+      URL.revokeObjectURL(jsonUrl);
 
-      const skuVal = (skuInput.value || 'produkt').trim().replace(/\s+/g, '-');
-      const filename = skuVal + '.json';
-      const blob = new Blob([jsonOutput.value], { type: 'application/json' });
-
-      const a = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Bild speichern
+      const imgUrl = URL.createObjectURL(capturedImageBlob);
+      const imgLink = document.createElement('a');
+      imgLink.href = imgUrl;
+      imgLink.download = capturedImageFilename;
+      document.body.appendChild(imgLink);
+      imgLink.click();
+      document.body.removeChild(imgLink);
+      URL.revokeObjectURL(imgUrl);
     });
   </script>
 </body>
