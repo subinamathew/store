@@ -233,4 +233,395 @@
         <label for="imageUrlInput">image_url</label>
         <input type="text" id="imageUrlInput" placeholder="wird automatisch auf SKU.png gesetzt" />
         <small>Wird beim Speichern immer auf <code>SKU.png</code> gesetzt.</small>
-      </di
+      </div>
+
+      <div class="controls">
+        <button id="saveAllBtn">💾 Alles speichern (Foto + JSON)</button>
+      </div>
+    </section>
+
+    <!-- JSON Ausgabe -->
+    <section>
+      <h2>JSON Vorschau</h2>
+      <textarea id="jsonOutput" rows="16" readonly></textarea>
+    </section>
+  </main>
+
+  <script>
+    /********** Produkt-Vorlagen (Templates) **********/
+    const productTemplates = {
+      "Accessoires & Ausrüstung": {
+        "Socken": {
+          name: "Sportsocken",
+          description: "Bequeme Sportsocken mit guter Dämpfung.",
+          subcategory: "Accessoires",
+          type: "Socken",
+          material: "Baumwolle-Polyester",
+          colors: ["Schwarz", "Weiß"],
+        },
+        "Handschuhe": {
+          name: "Sporthandschuhe",
+          description: "Handschuhe mit Grip für Training und Outdoor.",
+          subcategory: "Accessoires",
+          type: "Handschuhe",
+          material: "Synthetik",
+          colors: ["Schwarz"],
+        },
+        "Mütze/Schal": {
+          name: "Mütze / Schal",
+          description: "Warme Mütze oder Schal für Outdoor-Sport.",
+          subcategory: "Accessoires",
+          type: "Mütze/Schal",
+          material: "Acryl",
+          colors: ["Schwarz", "Grau"],
+        },
+        "Handyhalter": {
+          name: "Handyhalter",
+          description: "Handyhalter für den Arm beim Laufen.",
+          subcategory: "Ausrüstung",
+          type: "Handyhalter",
+          material: "Neopren",
+          colors: ["Schwarz"],
+        },
+        "Karategürtel": {
+          name: "Karategürtel",
+          description: "Robuster Gürtel für Karate und andere Kampfsportarten.",
+          subcategory: "Ausrüstung",
+          type: "Karategürtel",
+          material: "Baumwolle",
+          colors: ["Weiß", "Gelb", "Orange", "Grün", "Blau", "Braun", "Schwarz"],
+        },
+        "Taschen": {
+          name: "Sporttasche",
+          description: "Geräumige Tasche für Sportausrüstung.",
+          subcategory: "Ausrüstung",
+          type: "Tasche",
+          material: "Polyester",
+          colors: ["Schwarz", "Blau"],
+        },
+        "Judo": {
+          name: "Judo-Ausrüstung",
+          description: "Zubehör für Judo-Training und Wettkampf.",
+          subcategory: "Ausrüstung",
+          type: "Judo",
+          material: "Mischgewebe",
+          colors: ["Weiß"],
+        },
+        "Cappy": {
+          name: "Cap",
+          description: "Leichte Cap zum Sport oder Alltag.",
+          subcategory: "Accessoires",
+          type: "Cap",
+          material: "Baumwolle",
+          colors: ["Schwarz", "Navy"],
+        }
+      },
+      "Bekleidung": {
+        "Schuhe": {
+          name: "Sportschuhe",
+          description: "Leichte, bequeme Sportschuhe für Training und Alltag.",
+          subcategory: "Schuhe",
+          type: "Schuhe",
+          material: "Synthetik",
+          colors: ["Schwarz", "Weiß"],
+        },
+        "Gymnastik (Tops & Leggings)": {
+          name: "Gymnastik-Outfit",
+          description: "Set aus Gymnastik-Top und Leggings.",
+          subcategory: "Gymnastik",
+          type: "Tops & Leggings",
+          material: "Elasthan-Mischung",
+          colors: ["Schwarz", "Lila", "Blau"],
+        },
+        "Leibchen": {
+          name: "Leibchen",
+          description: "Standard-Leibchen für Training und Teamsport.",
+          subcategory: "Oberteile",
+          type: "Leibchen",
+          material: "Polyester",
+          colors: ["Gelb", "Rot", "Blau"],
+        },
+        "Oberteile": {
+          name: "Sport-Oberteil",
+          description: "Oberteil für verschiedene Sportarten.",
+          subcategory: "Oberteile",
+          type: "Oberteil",
+          material: "Polyester",
+          colors: ["Schwarz", "Blau", "Rot"],
+        },
+        "Unterteile": {
+          name: "Sport-Unterteil",
+          description: "Bequeme Hose/Shorts für Sport und Training.",
+          subcategory: "Unterteile",
+          type: "Unterteil",
+          material: "Polyester",
+          colors: ["Schwarz", "Navy"],
+        },
+        "Sport-BHs": {
+          name: "Sport-BH",
+          description: "Stützender Sport-BH für Training und Alltag.",
+          subcategory: "Unterwäsche",
+          type: "Sport-BH",
+          material: "Elasthan-Mischung",
+          colors: ["Schwarz", "Grau"],
+        },
+        "Badeanzüge": {
+          name: "Badeanzug",
+          description: "Sportlicher Badeanzug für Schwimmtraining.",
+          subcategory: "Schwimmen",
+          type: "Badeanzug",
+          material: "Polyamid-Elasthan",
+          colors: ["Blau", "Schwarz"],
+        },
+        "Bikini": {
+          name: "Bikini",
+          description: "Sportlicher Bikini für Strand und Schwimmbad.",
+          subcategory: "Schwimmen",
+          type: "Bikini",
+          material: "Polyamid-Elasthan",
+          colors: ["Bunt", "Schwarz"],
+        }
+      }
+    };
+
+    const categorySelect = document.getElementById('categorySelect');
+    const itemTypeSelect = document.getElementById('itemTypeSelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const skuInput = document.getElementById('skuInput');
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const saveAllBtn = document.getElementById('saveAllBtn');
+
+    let skuDirty = false;
+
+    function populateItemTypes(category) {
+      itemTypeSelect.innerHTML = '';
+      if (!category || !productTemplates[category]) {
+        itemTypeSelect.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Bitte zuerst Kategorie wählen ...';
+        itemTypeSelect.appendChild(opt);
+        return;
+      }
+      itemTypeSelect.disabled = false;
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Bitte Artikeltyp wählen ...';
+      itemTypeSelect.appendChild(placeholder);
+
+      const types = Object.keys(productTemplates[category]);
+      types.forEach(typeName => {
+        const opt = document.createElement('option');
+        opt.value = typeName;
+        opt.textContent = typeName;
+        itemTypeSelect.appendChild(opt);
+      });
+    }
+
+    function generateSku(category, itemType) {
+      const prefixMap = {
+        "Accessoires & Ausrüstung": "ACC",
+        "Bekleidung": "BEK"
+      };
+      const prefix = prefixMap[category] || "GEN";
+      const typePart = (itemType || "PROD")
+        .toUpperCase()
+        .replace(/Ä/g, "AE")
+        .replace(/Ö/g, "OE")
+        .replace(/Ü/g, "UE")
+        .replace(/ß/g, "SS")
+        .replace(/[^A-Z0-9]+/g, '-');
+      const random = Math.floor(100 + Math.random() * 900);
+      return `${prefix}-${typePart}-${random}`;
+    }
+
+    categorySelect.addEventListener('change', () => {
+      populateItemTypes(categorySelect.value);
+      if (!skuDirty && categorySelect.value) {
+        skuInput.value = generateSku(categorySelect.value, itemTypeSelect.value || "PROD");
+      }
+    });
+
+    itemTypeSelect.addEventListener('change', () => {
+      if (!skuDirty && categorySelect.value && itemTypeSelect.value) {
+        skuInput.value = generateSku(categorySelect.value, itemTypeSelect.value);
+      }
+    });
+
+    skuInput.addEventListener('input', () => {
+      skuDirty = skuInput.value.trim().length > 0;
+    });
+
+    /********** Kamera-Logik (Back Camera bevorzugt) **********/
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startCamBtn = document.getElementById('startCamBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const photoPreview = document.getElementById('photoPreview');
+
+    let mediaStream = null;
+    let capturedImageBlob = null;
+
+    async function startCameraWithBackFacing() {
+      const envConstraints = {
+        video: {
+          facingMode: { ideal: "environment" }
+        },
+        audio: false
+      };
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(envConstraints);
+        return;
+      } catch (err) {
+        console.warn("Environment camera failed, falling back to default:", err);
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+    }
+
+    startCamBtn.addEventListener('click', async () => {
+      try {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(t => t.stop());
+        }
+        await startCameraWithBackFacing();
+        video.srcObject = mediaStream;
+        captureBtn.disabled = false;
+      } catch (err) {
+        alert('Kamera konnte nicht gestartet werden: ' + err.message);
+      }
+    });
+
+    // Foto aufnehmen – SKU wird bei Bedarf vorher erzeugt
+    captureBtn.addEventListener('click', () => {
+      if (!mediaStream) {
+        alert('Bitte zuerst die Kamera starten.');
+        return;
+      }
+
+      // sicherstellen, dass es eine SKU gibt, bevor wir einen Namen ableiten
+      let sku = skuInput.value.trim();
+      const category = categorySelect.value;
+      const itemType = itemTypeSelect.value || "PROD";
+
+      if (!sku) {
+        sku = generateSku(category || "GEN", itemType);
+        skuInput.value = sku;
+      }
+
+      const sanitizedSku = sku.replace(/\s+/g, '-');
+      const suggestedFilename = sanitizedSku + '.png';
+      imageUrlInput.value = suggestedFilename;
+
+      const videoTrack = mediaStream.getVideoTracks()[0];
+      const settings = videoTrack.getSettings();
+      const width = settings.width || 640;
+      const height = settings.height || 480;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          alert('Fehler beim Erzeugen des Bildes.');
+          return;
+        }
+        capturedImageBlob = blob;
+
+        const url = URL.createObjectURL(blob);
+        photoPreview.src = url;
+
+        alert('Foto aufgenommen! Beim Speichern wird der Name aus der aktuellen SKU verwendet.');
+      }, 'image/png');
+    });
+
+    /********** JSON + Bild speichern (ein Button) **********/
+    saveAllBtn.addEventListener('click', () => {
+      const category = categorySelect.value;
+      const itemType = itemTypeSelect.value;
+
+      if (!category) {
+        alert('Bitte eine Kategorie wählen.');
+        return;
+      }
+      if (!itemType) {
+        alert('Bitte einen Artikeltyp wählen.');
+        return;
+      }
+
+      let sku = skuInput.value.trim();
+      if (!sku) {
+        sku = generateSku(category, itemType);
+        skuInput.value = sku;
+      }
+
+      if (!capturedImageBlob) {
+        alert('Bitte zuerst ein Foto aufnehmen, bevor du speicherst.');
+        return;
+      }
+
+      const qty = parseInt(quantityInput.value, 10) || 0;
+
+      // *** EINHEITLICHER NAME: photoName = SKU.png ***
+      const sanitizedSku = sku.replace(/\s+/g, '-');
+      const photoFileName = sanitizedSku + '.png';
+
+      // image_url im JSON = exakt derselbe Name
+      const imageUrl = photoFileName;
+      imageUrlInput.value = imageUrl;
+
+      const template = productTemplates[category][itemType] || {
+        name: itemType,
+        description: "",
+        subcategory: category,
+        type: itemType,
+        material: "",
+        colors: []
+      };
+
+      const product = {
+        sku: sku,
+        name: template.name,
+        description: template.description,
+        category: category,
+        subcategory: template.subcategory,
+        type: template.type,
+        material: template.material,
+        colors: template.colors,
+        sizes: ["OneSize"],
+        stock: {
+          "OneSize": qty
+        },
+        image_url: imageUrl   // <- genau derselbe Name wie Foto
+      };
+
+      const jsonString = JSON.stringify([product], null, 2);
+      jsonOutput.value = jsonString;
+
+      // JSON speichern (Dateiname = SKU.json)
+      const jsonBlob = new Blob([jsonString], { type: 'application/json' });
+      const jsonUrl = URL.createObjectURL(jsonBlob);
+      const jsonLink = document.createElement('a');
+      jsonLink.href = jsonUrl;
+      jsonLink.download = sanitizedSku + '.json';
+      document.body.appendChild(jsonLink);
+      jsonLink.click();
+      document.body.removeChild(jsonLink);
+      URL.revokeObjectURL(jsonUrl);
+
+      // Bild speichern (Dateiname = SKU.png)
+      const imgUrl = URL.createObjectURL(capturedImageBlob);
+      const imgLink = document.createElement('a');
+      imgLink.href = imgUrl;
+      imgLink.download = photoFileName;
+      document.body.appendChild(imgLink);
+      imgLink.click();
+      document.body.removeChild(imgLink);
+      URL.revokeObjectURL(imgUrl);
+    });
+  </script>
+</body>
+</html>
