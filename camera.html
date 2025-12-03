@@ -174,31 +174,30 @@
   <main>
     <h1>Product Photo & JSON / Produkt-Foto & JSON</h1>
     <p class="lead">
-      Select category & item type, enter quantity, take a photo with the back camera,
-      then save photo + JSON with one tap.<br />
+      Select category & item type, enter stock quantity, take a photo with the back camera
+      and save photo + JSON with one tap. Photo file name = SKU.png, image_url = SKU.png.<br />
       Kategorie & Artikeltyp wählen, Menge eintragen, Foto mit der Rückkamera machen
-      und mit einem Button Bild + JSON speichern.<br />
-      <strong>Photo file name / Bildname = SKU.png, image_url = SKU.png</strong>
+      und mit einem Button Bild + JSON speichern. Bildname = SKU.png, image_url = SKU.png.
     </p>
 
-    <!-- CAMERA / FOTO -->
+    <!-- Kamera / Foto -->
     <section>
       <h2>Camera & Photo / Kamera & Foto</h2>
       <video id="video" autoplay playsinline muted></video>
       <canvas id="canvas" style="display:none;"></canvas>
       <div class="controls">
-        <button id="startCamBtn">📷 Start back camera / Rückkamera starten</button>
+        <button id="startCamBtn">📷 Start back camera / Kamera (Rückseite) starten</button>
         <button id="captureBtn" disabled>📸 Take photo / Foto aufnehmen</button>
       </div>
       <small>
-        Tip: On mobile use HTTPS so the browser allows camera access.<br />
-        Tipp: Auf dem Smartphone am besten über HTTPS öffnen, damit die Kamera nicht blockiert wird.
+        Tip: On mobile use HTTPS so the browser allows the camera.<br />
+        Tipp: Auf dem Smartphone am besten über HTTPS öffnen, sonst blocken manche Browser die Kamera.
       </small>
       <h3 style="margin-top: 0.9rem; font-size: 0.95rem;">Preview / Vorschau</h3>
       <img id="photoPreview" alt="Captured photo / Aufgenommenes Foto" />
     </section>
 
-    <!-- PRODUCT SELECTION -->
+    <!-- Produkt-Auswahl (Dropdown) -->
     <section>
       <h2>Product selection / Produktauswahl</h2>
       <div class="row">
@@ -234,14 +233,14 @@
           <input type="text" id="skuInput" placeholder="auto-generated / wird automatisch erzeugt" />
           <small>
             Generated from category + item type, but can be edited.<br />
-            Wird aus Kategorie + Artikeltyp erzeugt, kann aber geändert werden.
+            Wird aus Kategorie + Artikeltyp erzeugt, kann aber überschrieben werden.
           </small>
         </div>
       </div>
 
       <div class="field">
         <label for="imageUrlInput">image_url</label>
-        <input type="text" id="imageUrlInput" placeholder="will be set to SKU.png / wird auf SKU.png gesetzt" />
+        <input type="text" id="imageUrlInput" placeholder="will be set to SKU.png / wird automatisch auf SKU.png gesetzt" />
         <small>
           When saving, this is always set to <code>SKU.png</code>.<br />
           Beim Speichern wird dies immer auf <code>SKU.png</code> gesetzt.
@@ -253,7 +252,7 @@
       </div>
     </section>
 
-    <!-- JSON OUTPUT -->
+    <!-- JSON Ausgabe -->
     <section>
       <h2>JSON preview / JSON-Vorschau</h2>
       <textarea id="jsonOutput" rows="16" readonly></textarea>
@@ -261,7 +260,20 @@
   </main>
 
   <script>
-    /********** PRODUCT TEMPLATES / PRODUKT-VORLAGEN **********/
+    /********** Base colors including black, white & rainbow / Basis-Farben **********/
+    const baseColors = [
+      "Schwarz / Black",
+      "Weiß / White",
+      "Rot / Red",
+      "Orange",
+      "Gelb / Yellow",
+      "Grün / Green",
+      "Blau / Blue",
+      "Indigo",
+      "Violett / Violet"
+    ];
+
+    /********** Produkt-Vorlagen (Templates) **********/
     const productTemplates = {
       "Accessoires & Ausrüstung": {
         "Socken": {
@@ -270,7 +282,7 @@
           subcategory: "Accessoires / Accessories",
           type: "Socken / Socks",
           material: "Baumwolle-Polyester / Cotton-Polyester",
-          colors: ["Schwarz / Black", "Weiß / White"],
+          colors: [...baseColors],
         },
         "Handschuhe": {
           name: "Sporthandschuhe / Sports gloves",
@@ -278,7 +290,7 @@
           subcategory: "Accessoires / Accessories",
           type: "Handschuhe / Gloves",
           material: "Synthetik / Synthetic",
-          colors: ["Schwarz / Black"],
+          colors: [...baseColors],
         },
         "Mütze/Schal": {
           name: "Mütze / Schal / Beanie / Scarf",
@@ -286,7 +298,7 @@
           subcategory: "Accessoires / Accessories",
           type: "Mütze/Schal / Beanie/Scarf",
           material: "Acryl / Acrylic",
-          colors: ["Schwarz / Black", "Grau / Grey"],
+          colors: [...baseColors],
         },
         "Handyhalter": {
           name: "Handyhalter / Phone holder",
@@ -294,7 +306,7 @@
           subcategory: "Ausrüstung / Equipment",
           type: "Handyhalter / Phone holder",
           material: "Neopren / Neoprene",
-          colors: ["Schwarz / Black"],
+          colors: [...baseColors],
         },
         "Karategürtel": {
           name: "Karategürtel / Karate belt",
@@ -302,7 +314,7 @@
           subcategory: "Ausrüstung / Equipment",
           type: "Karategürtel / Karate belt",
           material: "Baumwolle / Cotton",
-          colors: ["Weiß / White", "Gelb / Yellow", "Orange", "Grün / Green", "Blau / Blue", "Braun / Brown", "Schwarz / Black"],
+          colors: [...baseColors],
         },
         "Taschen": {
           name: "Sporttasche / Sports bag",
@@ -310,7 +322,7 @@
           subcategory: "Ausrüstung / Equipment",
           type: "Tasche / Bag",
           material: "Polyester",
-          colors: ["Schwarz / Black", "Blau / Blue"],
+          colors: [...baseColors],
         },
         "Judo": {
           name: "Judo-Ausrüstung / Judo equipment",
@@ -318,7 +330,7 @@
           subcategory: "Ausrüstung / Equipment",
           type: "Judo",
           material: "Mischgewebe / Mixed fabric",
-          colors: ["Weiß / White"],
+          colors: [...baseColors],
         },
         "Cappy": {
           name: "Cap / Cappy",
@@ -326,7 +338,7 @@
           subcategory: "Accessoires / Accessories",
           type: "Cap / Cappy",
           material: "Baumwolle / Cotton",
-          colors: ["Schwarz / Black", "Navy"],
+          colors: [...baseColors],
         }
       },
       "Bekleidung": {
@@ -336,15 +348,15 @@
           subcategory: "Schuhe / Shoes",
           type: "Schuhe / Shoes",
           material: "Synthetik / Synthetic",
-          colors: ["Schwarz / Black", "Weiß / White"],
+          colors: [...baseColors],
         },
         "Gymnastik (Tops & Leggings)": {
           name: "Gymnastik-Outfit / Gym outfit",
           description: "Set aus Gymnastik-Top und Leggings. / Set of gym top and leggings.",
-          subcategory: "Gymnastik",
+          subcategory: "Gymnastik / Gymnastics",
           type: "Tops & Leggings",
           material: "Elasthan-Mischung / Elastane blend",
-          colors: ["Schwarz / Black", "Lila / Purple", "Blau / Blue"],
+          colors: [...baseColors],
         },
         "Leibchen": {
           name: "Leibchen / Training bib",
@@ -352,7 +364,7 @@
           subcategory: "Oberteile / Tops",
           type: "Leibchen / Bib",
           material: "Polyester",
-          colors: ["Gelb / Yellow", "Rot / Red", "Blau / Blue"],
+          colors: [...baseColors],
         },
         "Oberteile": {
           name: "Sport-Oberteil / Sports top",
@@ -360,7 +372,7 @@
           subcategory: "Oberteile / Tops",
           type: "Oberteil / Top",
           material: "Polyester",
-          colors: ["Schwarz / Black", "Blau / Blue", "Rot / Red"],
+          colors: [...baseColors],
         },
         "Unterteile": {
           name: "Sport-Unterteil / Sports bottom",
@@ -368,7 +380,7 @@
           subcategory: "Unterteile / Bottoms",
           type: "Unterteil / Bottom",
           material: "Polyester",
-          colors: ["Schwarz / Black", "Navy"],
+          colors: [...baseColors],
         },
         "Sport-BHs": {
           name: "Sport-BH / Sports bra",
@@ -376,7 +388,7 @@
           subcategory: "Unterwäsche / Underwear",
           type: "Sport-BH / Sports bra",
           material: "Elasthan-Mischung / Elastane blend",
-          colors: ["Schwarz / Black", "Grau / Grey"],
+          colors: [...baseColors],
         },
         "Badeanzüge": {
           name: "Badeanzug / Swimsuit",
@@ -384,7 +396,7 @@
           subcategory: "Schwimmen / Swim",
           type: "Badeanzug / Swimsuit",
           material: "Polyamid-Elasthan / Polyamide-elastane",
-          colors: ["Blau / Blue", "Schwarz / Black"],
+          colors: [...baseColors],
         },
         "Bikini": {
           name: "Bikini",
@@ -392,7 +404,7 @@
           subcategory: "Schwimmen / Swim",
           type: "Bikini",
           material: "Polyamid-Elasthan / Polyamide-elastane",
-          colors: ["Bunt / Multi", "Schwarz / Black"],
+          colors: [...baseColors],
         }
       }
     };
@@ -466,7 +478,7 @@
       skuDirty = skuInput.value.trim().length > 0;
     });
 
-    /********** CAMERA LOGIC / KAMERA-LOGIK (BACK CAMERA) **********/
+    /********** Kamera-Logik (Back Camera bevorzugt) **********/
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const startCamBtn = document.getElementById('startCamBtn');
@@ -505,7 +517,7 @@
       }
     });
 
-    // TAKE PHOTO / FOTO AUFNEHMEN
+    // Foto aufnehmen – ensure SKU exists first
     captureBtn.addEventListener('click', () => {
       if (!mediaStream) {
         alert('Please start the camera first.\nBitte zuerst die Kamera starten.');
@@ -546,11 +558,11 @@
         const url = URL.createObjectURL(blob);
         photoPreview.src = url;
 
-        alert('Photo captured. The current SKU will be used as file name when saving.\nFoto aufgenommen. Die aktuelle SKU wird beim Speichern als Dateiname verwendet.');
+        alert('Photo captured. Current SKU will be used as file name when saving.\nFoto aufgenommen. Die aktuelle SKU wird beim Speichern als Dateiname verwendet.');
       }, 'image/png');
     });
 
-    /********** SAVE JSON + PHOTO (ONE BUTTON) / SPEICHERN (EIN BUTTON) **********/
+    /********** JSON + Bild speichern (ein Button) **********/
     saveAllBtn.addEventListener('click', () => {
       const category = categorySelect.value;
       const itemType = itemTypeSelect.value;
@@ -577,11 +589,11 @@
 
       const qty = parseInt(quantityInput.value, 10) || 0;
 
-      // UNIFIED NAME: photoName = SKU.png / EINHEITLICHER NAME: photoName = SKU.png
+      // unified name: photoName = SKU.png
       const sanitizedSku = sku.replace(/\s+/g, '-');
       const photoFileName = sanitizedSku + '.png';
 
-      // image_url = photoFileName
+      // image_url in JSON = same as photo filename
       const imageUrl = photoFileName;
       imageUrlInput.value = imageUrl;
 
@@ -591,7 +603,7 @@
         subcategory: category,
         type: itemType,
         material: "",
-        colors: []
+        colors: [...baseColors]
       };
 
       const product = {
@@ -613,7 +625,7 @@
       const jsonString = JSON.stringify([product], null, 2);
       jsonOutput.value = jsonString;
 
-      // SAVE JSON (file name = SKU.json)
+      // JSON speichern (SKU.json)
       const jsonBlob = new Blob([jsonString], { type: 'application/json' });
       const jsonUrl = URL.createObjectURL(jsonBlob);
       const jsonLink = document.createElement('a');
@@ -624,7 +636,7 @@
       document.body.removeChild(jsonLink);
       URL.revokeObjectURL(jsonUrl);
 
-      // SAVE IMAGE (file name = SKU.png)
+      // Bild speichern (SKU.png)
       const imgUrl = URL.createObjectURL(capturedImageBlob);
       const imgLink = document.createElement('a');
       imgLink.href = imgUrl;
