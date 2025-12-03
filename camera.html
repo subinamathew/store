@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Produkt Foto + JSON Generator</title>
+  <title>Einfache Produkt-App (Foto + JSON)</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -38,9 +38,10 @@
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
+    select,
     input[type="text"],
-    textarea,
-    input[type="number"] {
+    input[type="number"],
+    textarea {
       width: 100%;
       padding: 0.4rem;
       border-radius: 4px;
@@ -72,11 +73,12 @@
   </style>
 </head>
 <body>
-  <h1>Produkt-Foto aufnehmen & JSON erzeugen</h1>
+  <h1>Produkt-Foto aufnehmen & JSON erzeugen (einfach)</h1>
   <p>
-    1. Kamera starten → Foto aufnehmen → Foto speichern.<br />
-    2. Produktdaten ausfüllen → JSON erzeugen → JSON speichern.<br />
-    <strong>image_url</strong> wird automatisch auf den Foto-Dateinamen gesetzt.
+    1. Kategorie & Artikeltyp auswählen, Menge eintragen.<br />
+    2. Kamera starten → Foto aufnehmen → Foto speichern.<br />
+    3. JSON erzeugen → JSON speichern.<br />
+    Alle Detailfelder (Name, Beschreibung, etc.) werden automatisch aus Vorlagen erzeugt.
   </p>
 
   <!-- Kamera / Foto -->
@@ -96,73 +98,51 @@
     <img id="photoPreview" alt="Aufgenommenes Foto" />
   </section>
 
-  <!-- Produktformular -->
+  <!-- Produkt-Auswahl (DROPDOWN) -->
   <section>
-    <h2>Produktdaten</h2>
-    <form id="productForm" onsubmit="return false;">
-      <div class="row">
-        <div class="field">
-          <label for="sku">SKU</label>
-          <input type="text" id="sku" placeholder="z.B. HERR-SHIRT-BLAU-001" />
-        </div>
-        <div class="field">
-          <label for="name">Name</label>
-          <input type="text" id="name" placeholder="Athletisches Herren-T-Shirt" />
-        </div>
+    <h2>Produkt-Auswahl</h2>
+    <div class="row">
+      <div class="field">
+        <label for="categorySelect">Kategorie</label>
+        <select id="categorySelect">
+          <option value="">Bitte wählen ...</option>
+          <option value="Accessoires & Ausrüstung">Accessoires &amp; Ausrüstung</option>
+          <option value="Bekleidung">Bekleidung</option>
+        </select>
       </div>
 
       <div class="field">
-        <label for="description">Beschreibung</label>
-        <textarea id="description" rows="3" placeholder="Ein atmungsaktives T-Shirt für maximale Leistung."></textarea>
+        <label for="itemTypeSelect">Artikeltyp</label>
+        <select id="itemTypeSelect" disabled>
+          <option value="">Bitte zuerst Kategorie wählen ...</option>
+        </select>
       </div>
+    </div>
 
-      <div class="row">
-        <div class="field">
-          <label for="category">Kategorie</label>
-          <input type="text" id="category" placeholder="Herren, Damen, Unisex, Zubehör ..." />
-        </div>
-        <div class="field">
-          <label for="subcategory">Subkategorie</label>
-          <input type="text" id="subcategory" placeholder="Sportbekleidung, Schuhe, Zubehör ..." />
-        </div>
-        <div class="field">
-          <label for="type">Typ</label>
-          <input type="text" id="type" placeholder="T-Shirt, Hose, Schuhe ..." />
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label for="material">Material</label>
-          <input type="text" id="material" placeholder="Polyester, Baumwolle-Elasthan, ..." />
-        </div>
-        <div class="field">
-          <label for="colors">Farben (durch Komma getrennt)</label>
-          <input type="text" id="colors" placeholder="Blau, Schwarz, Grau" />
-        </div>
-        <div class="field">
-          <label for="sizes">Größen (durch Komma getrennt)</label>
-          <input type="text" id="sizes" placeholder="S, M, L, XL" />
-        </div>
+    <div class="row">
+      <div class="field">
+        <label for="quantityInput">Menge im Lager</label>
+        <input type="number" id="quantityInput" min="0" step="1" placeholder="z.B. 84" />
+        <small>Nur eine Gesamtmenge, intern wird <code>OneSize</code> verwendet.</small>
       </div>
 
       <div class="field">
-        <label for="stock">Stock (size:menge, eine pro Zeile)</label>
-        <textarea id="stock" rows="4" placeholder="S:10&#10;M:15&#10;L:12&#10;XL:5"></textarea>
-        <small>Beispiel: jede Zeile im Format <code>Größe:Menge</code></small>
+        <label for="skuInput">SKU</label>
+        <input type="text" id="skuInput" placeholder="wird automatisch erzeugt" />
+        <small>Wird aus Kategorie + Artikeltyp erzeugt, kann aber überschrieben werden.</small>
       </div>
+    </div>
 
-      <div class="field">
-        <label for="imageUrl">image_url (Dateiname oder URL)</label>
-        <input type="text" id="imageUrl" placeholder="wird nach Fotoaufnahme automatisch gesetzt" />
-        <small>Nach dem Foto z.B. <code>HERR-SHIRT-BLAU-001.png</code> oder ein kompletter URL.</small>
-      </div>
+    <div class="field">
+      <label for="imageUrlInput">image_url</label>
+      <input type="text" id="imageUrlInput" placeholder="wird nach Fotoaufnahme auf &lt;SKU&gt;.png gesetzt" />
+      <small>Nach Fotoaufnahme automatisch gefüllt (Dateiname). Du kannst den Pfad/URL anpassen.</small>
+    </div>
 
-      <div>
-        <button id="generateJsonBtn">JSON erzeugen</button>
-        <button id="downloadJsonBtn" disabled>JSON speichern</button>
-      </div>
-    </form>
+    <div>
+      <button id="generateJsonBtn">JSON erzeugen</button>
+      <button id="downloadJsonBtn" disabled>JSON speichern</button>
+    </div>
   </section>
 
   <!-- JSON Ausgabe -->
@@ -172,18 +152,220 @@
   </section>
 
   <script>
+    /********** Produkt-Vorlagen (Templates) **********/
+    // Du kannst diese Texte gerne anpassen/erweitern.
+    const productTemplates = {
+      "Accessoires & Ausrüstung": {
+        "Socken": {
+          name: "Sportsocken",
+          description: "Bequeme Sportsocken mit guter Dämpfung.",
+          subcategory: "Accessoires",
+          type: "Socken",
+          material: "Baumwolle-Polyester",
+          colors: ["Schwarz", "Weiß"],
+        },
+        "Handschuhe": {
+          name: "Sporthandschuhe",
+          description: "Handschuhe mit Grip für Training und Outdoor.",
+          subcategory: "Accessoires",
+          type: "Handschuhe",
+          material: "Synthetik",
+          colors: ["Schwarz"],
+        },
+        "Mütze/Schal": {
+          name: "Mütze / Schal",
+          description: "Warme Mütze oder Schal für Outdoor-Sport.",
+          subcategory: "Accessoires",
+          type: "Mütze/Schal",
+          material: "Acryl",
+          colors: ["Schwarz", "Grau"],
+        },
+        "Handyhalter": {
+          name: "Handyhalter",
+          description: "Handyhalter für den Arm beim Laufen.",
+          subcategory: "Ausrüstung",
+          type: "Handyhalter",
+          material: "Neopren",
+          colors: ["Schwarz"],
+        },
+        "Karategürtel": {
+          name: "Karategürtel",
+          description: "Robuster Gürtel für Karate und andere Kampfsportarten.",
+          subcategory: "Ausrüstung",
+          type: "Karategürtel",
+          material: "Baumwolle",
+          colors: ["Weiß", "Gelb", "Orange", "Grün", "Blau", "Braun", "Schwarz"],
+        },
+        "Taschen": {
+          name: "Sporttasche",
+          description: "Geräumige Tasche für Sportausrüstung.",
+          subcategory: "Ausrüstung",
+          type: "Tasche",
+          material: "Polyester",
+          colors: ["Schwarz", "Blau"],
+        },
+        "Judo": {
+          name: "Judo-Ausrüstung",
+          description: "Zubehör für Judo-Training und Wettkampf.",
+          subcategory: "Ausrüstung",
+          type: "Judo",
+          material: "Mischgewebe",
+          colors: ["Weiß"],
+        },
+        "Cappy": {
+          name: "Cap",
+          description: "Leichte Cap zum Sport oder Alltag.",
+          subcategory: "Accessoires",
+          type: "Cap",
+          material: "Baumwolle",
+          colors: ["Schwarz", "Navy"],
+        }
+      },
+      "Bekleidung": {
+        "Schuhe": {
+          name: "Sportschuhe",
+          description: "Leichte, bequeme Sportschuhe für Training und Alltag.",
+          subcategory: "Schuhe",
+          type: "Schuhe",
+          material: "Synthetik",
+          colors: ["Schwarz", "Weiß"],
+        },
+        "Gymnastik (Tops & Leggings)": {
+          name: "Gymnastik-Outfit",
+          description: "Set aus Gymnastik-Top und Leggings.",
+          subcategory: "Gymnastik",
+          type: "Tops & Leggings",
+          material: "Elasthan-Mischung",
+          colors: ["Schwarz", "Lila", "Blau"],
+        },
+        "Leibchen": {
+          name: "Leibchen",
+          description: "Standard-Leibchen für Training und Teamsport.",
+          subcategory: "Oberteile",
+          type: "Leibchen",
+          material: "Polyester",
+          colors: ["Gelb", "Rot", "Blau"],
+        },
+        "Oberteile": {
+          name: "Sport-Oberteil",
+          description: "Oberteil für verschiedene Sportarten.",
+          subcategory: "Oberteile",
+          type: "Oberteil",
+          material: "Polyester",
+          colors: ["Schwarz", "Blau", "Rot"],
+        },
+        "Unterteile": {
+          name: "Sport-Unterteil",
+          description: "Bequeme Hose/Shorts für Sport und Training.",
+          subcategory: "Unterteile",
+          type: "Unterteil",
+          material: "Polyester",
+          colors: ["Schwarz", "Navy"],
+        },
+        "Sport-BHs": {
+          name: "Sport-BH",
+          description: "Stützender Sport-BH für Training und Alltag.",
+          subcategory: "Unterwäsche",
+          type: "Sport-BH",
+          material: "Elasthan-Mischung",
+          colors: ["Schwarz", "Grau"],
+        },
+        "Badeanzüge": {
+          name: "Badeanzug",
+          description: "Sportlicher Badeanzug für Schwimmtraining.",
+          subcategory: "Schwimmen",
+          type: "Badeanzug",
+          material: "Polyamid-Elasthan",
+          colors: ["Blau", "Schwarz"],
+        },
+        "Bikini": {
+          name: "Bikini",
+          description: "Sportlicher Bikini für Strand und Schwimmbad.",
+          subcategory: "Schwimmen",
+          type: "Bikini",
+          material: "Polyamid-Elasthan",
+          colors: ["Bunt", "Schwarz"],
+        }
+      }
+    };
+
+    const categorySelect = document.getElementById('categorySelect');
+    const itemTypeSelect = document.getElementById('itemTypeSelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const skuInput = document.getElementById('skuInput');
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const generateJsonBtn = document.getElementById('generateJsonBtn');
+    const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+
+    let skuDirty = false; // ob Nutzer SKU manuell geändert hat
+
+    function populateItemTypes(category) {
+      itemTypeSelect.innerHTML = '';
+      if (!category || !productTemplates[category]) {
+        itemTypeSelect.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Bitte zuerst Kategorie wählen ...';
+        itemTypeSelect.appendChild(opt);
+        return;
+      }
+      itemTypeSelect.disabled = false;
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Bitte Artikeltyp wählen ...';
+      itemTypeSelect.appendChild(placeholder);
+
+      const types = Object.keys(productTemplates[category]);
+      types.forEach(typeName => {
+        const opt = document.createElement('option');
+        opt.value = typeName;
+        opt.textContent = typeName;
+        itemTypeSelect.appendChild(opt);
+      });
+    }
+
+    function generateSku(category, itemType) {
+      const prefixMap = {
+        "Accessoires & Ausrüstung": "ACC",
+        "Bekleidung": "BEK"
+      };
+      const prefix = prefixMap[category] || "GEN";
+      const typePart = (itemType || "PROD")
+        .toUpperCase()
+        .replace(/Ä/g, "AE")
+        .replace(/Ö/g, "OE")
+        .replace(/Ü/g, "UE")
+        .replace(/ß/g, "SS")
+        .replace(/[^A-Z0-9]+/g, '-');
+      const random = Math.floor(100 + Math.random() * 900);
+      return `${prefix}-${typePart}-${random}`;
+    }
+
+    categorySelect.addEventListener('change', () => {
+      populateItemTypes(categorySelect.value);
+      if (!skuDirty && categorySelect.value) {
+        skuInput.value = generateSku(categorySelect.value, itemTypeSelect.value || "PROD");
+      }
+    });
+
+    itemTypeSelect.addEventListener('change', () => {
+      if (!skuDirty && categorySelect.value && itemTypeSelect.value) {
+        skuInput.value = generateSku(categorySelect.value, itemTypeSelect.value);
+      }
+    });
+
+    skuInput.addEventListener('input', () => {
+      skuDirty = skuInput.value.trim().length > 0;
+    });
+
+    /********** Kamera-Logik **********/
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const startCamBtn = document.getElementById('startCamBtn');
     const captureBtn = document.getElementById('captureBtn');
     const downloadPhotoBtn = document.getElementById('downloadPhotoBtn');
     const photoPreview = document.getElementById('photoPreview');
-
-    const skuInput = document.getElementById('sku');
-    const imageUrlInput = document.getElementById('imageUrl');
-    const generateJsonBtn = document.getElementById('generateJsonBtn');
-    const downloadJsonBtn = document.getElementById('downloadJsonBtn');
-    const jsonOutput = document.getElementById('jsonOutput');
 
     let mediaStream = null;
     let capturedImageBlob = null;
@@ -226,7 +408,6 @@
         const skuVal = (skuInput.value || 'produkt-foto').trim().replace(/\s+/g, '-');
         capturedImageFilename = skuVal + '.png';
 
-        // Vorschau anzeigen
         const url = URL.createObjectURL(blob);
         photoPreview.src = url;
 
@@ -238,7 +419,7 @@
       }, 'image/png');
     });
 
-    // Foto speichern (Download)
+    // Foto speichern
     downloadPhotoBtn.addEventListener('click', () => {
       if (!capturedImageBlob || !capturedImageFilename) {
         alert('Bitte zuerst ein Foto aufnehmen.');
@@ -248,59 +429,68 @@
       const a = document.createElement('a');
       const url = URL.createObjectURL(capturedImageBlob);
       a.href = url;
-      a.download = capturedImageFilename; // Browser fragt nach Ordner / Speicherort
+      a.download = capturedImageFilename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     });
 
-    // Hilfsfunktion: Stock-String -> Objekt
-    function parseStock(stockText) {
-      const stock = {};
-      const lines = stockText.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        const parts = trimmed.split(':');
-        if (parts.length < 2) continue;
-        const size = parts[0].trim();
-        const qty = parseInt(parts[1].trim(), 10);
-        stock[size] = isNaN(qty) ? parts[1].trim() : qty;
-      }
-      return stock;
-    }
-
-    // JSON erzeugen
+    /********** JSON-Erzeugung **********/
     generateJsonBtn.addEventListener('click', () => {
-      const product = {
-        sku: skuInput.value.trim(),
-        name: document.getElementById('name').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        category: document.getElementById('category').value.trim(),
-        subcategory: document.getElementById('subcategory').value.trim(),
-        type: document.getElementById('type').value.trim(),
-        material: document.getElementById('material').value.trim(),
-        colors: document.getElementById('colors').value
-          .split(',')
-          .map(c => c.trim())
-          .filter(c => c.length > 0),
-        sizes: document.getElementById('sizes').value
-          .split(',')
-          .map(s => s.trim())
-          .filter(s => s.length > 0),
-        stock: parseStock(document.getElementById('stock').value),
-        image_url: imageUrlInput.value.trim()
+      const category = categorySelect.value;
+      const itemType = itemTypeSelect.value;
+
+      if (!category) {
+        alert('Bitte eine Kategorie wählen.');
+        return;
+      }
+      if (!itemType) {
+        alert('Bitte einen Artikeltyp wählen.');
+        return;
+      }
+
+      const qty = parseInt(quantityInput.value, 10) || 0;
+      const sku = skuInput.value.trim() || generateSku(category, itemType);
+
+      // image_url: wenn leer, auf <SKU>.png setzen
+      let imageUrl = imageUrlInput.value.trim();
+      if (!imageUrl) {
+        imageUrl = sku.replace(/\s+/g, '-') + '.png';
+        imageUrlInput.value = imageUrl;
+      }
+
+      const template = productTemplates[category][itemType] || {
+        name: itemType,
+        description: "",
+        subcategory: category,
+        type: itemType,
+        material: "",
+        colors: []
       };
 
-      // Wrap in Array wie in deinem Beispiel
+      const product = {
+        sku: sku,
+        name: template.name,
+        description: template.description,
+        category: category,
+        subcategory: template.subcategory,
+        type: template.type,
+        material: template.material,
+        colors: template.colors,
+        sizes: ["OneSize"],
+        stock: {
+          "OneSize": qty
+        },
+        image_url: imageUrl
+      };
+
       const jsonArray = [product];
-      const jsonString = JSON.stringify(jsonArray, null, 2);
-      jsonOutput.value = jsonString;
+      jsonOutput.value = JSON.stringify(jsonArray, null, 2);
       downloadJsonBtn.disabled = false;
     });
 
-    // JSON speichern (Download)
+    // JSON speichern
     downloadJsonBtn.addEventListener('click', () => {
       if (!jsonOutput.value.trim()) {
         alert('Bitte zuerst JSON erzeugen.');
