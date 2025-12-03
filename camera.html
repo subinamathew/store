@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Produkt-Foto & JSON (One Button)</title>
+  <title>Product Photo & JSON / Produkt-Foto & JSON</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
@@ -172,214 +172,227 @@
 </head>
 <body>
   <main>
-    <h1>Produkt-Foto & JSON</h1>
+    <h1>Product Photo & JSON / Produkt-Foto & JSON</h1>
     <p class="lead">
+      Select category & item type, enter quantity, take a photo with the back camera,
+      then save photo + JSON with one tap.<br />
       Kategorie & Artikeltyp wählen, Menge eintragen, Foto mit der Rückkamera machen
-      und mit einem Button Bild + JSON speichern. Bildname = SKU.png, image_url = SKU.png.
+      und mit einem Button Bild + JSON speichern.<br />
+      <strong>Photo file name / Bildname = SKU.png, image_url = SKU.png</strong>
     </p>
 
-    <!-- Kamera / Foto -->
+    <!-- CAMERA / FOTO -->
     <section>
-      <h2>Kamera & Foto</h2>
+      <h2>Camera & Photo / Kamera & Foto</h2>
       <video id="video" autoplay playsinline muted></video>
       <canvas id="canvas" style="display:none;"></canvas>
       <div class="controls">
-        <button id="startCamBtn">📷 Kamera (Rückseite) starten</button>
-        <button id="captureBtn" disabled>📸 Foto aufnehmen</button>
+        <button id="startCamBtn">📷 Start back camera / Rückkamera starten</button>
+        <button id="captureBtn" disabled>📸 Take photo / Foto aufnehmen</button>
       </div>
       <small>
-        Tipp: Auf dem Smartphone am besten über HTTPS öffnen, sonst blocken manche Browser die Kamera.
+        Tip: On mobile use HTTPS so the browser allows camera access.<br />
+        Tipp: Auf dem Smartphone am besten über HTTPS öffnen, damit die Kamera nicht blockiert wird.
       </small>
-      <h3 style="margin-top: 0.9rem; font-size: 0.95rem;">Vorschau</h3>
-      <img id="photoPreview" alt="Aufgenommenes Foto" />
+      <h3 style="margin-top: 0.9rem; font-size: 0.95rem;">Preview / Vorschau</h3>
+      <img id="photoPreview" alt="Captured photo / Aufgenommenes Foto" />
     </section>
 
-    <!-- Produkt-Auswahl (Dropdown) -->
+    <!-- PRODUCT SELECTION -->
     <section>
-      <h2>Produkt-Auswahl</h2>
+      <h2>Product selection / Produktauswahl</h2>
       <div class="row">
         <div class="field">
-          <label for="categorySelect">Kategorie</label>
+          <label for="categorySelect">Category / Kategorie</label>
           <select id="categorySelect">
-            <option value="">Bitte wählen ...</option>
-            <option value="Accessoires & Ausrüstung">Accessoires &amp; Ausrüstung</option>
-            <option value="Bekleidung">Bekleidung</option>
+            <option value="">Please choose ... / Bitte wählen ...</option>
+            <option value="Accessoires & Ausrüstung">Accessories & Equipment / Accessoires &amp; Ausrüstung</option>
+            <option value="Bekleidung">Clothing / Bekleidung</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="itemTypeSelect">Artikeltyp</label>
+          <label for="itemTypeSelect">Item type / Artikeltyp</label>
           <select id="itemTypeSelect" disabled>
-            <option value="">Bitte zuerst Kategorie wählen ...</option>
+            <option value="">Choose category first / Bitte zuerst Kategorie wählen ...</option>
           </select>
         </div>
       </div>
 
       <div class="row">
         <div class="field">
-          <label for="quantityInput">Menge im Lager</label>
-          <input type="number" id="quantityInput" min="0" step="1" placeholder="z.B. 84" />
-          <small>Eine Gesamtmenge, intern als <code>OneSize</code> gespeichert.</small>
+          <label for="quantityInput">Stock quantity / Menge im Lager</label>
+          <input type="number" id="quantityInput" min="0" step="1" placeholder="e.g. 84 / z.B. 84" />
+          <small>
+            One total quantity, stored as <code>OneSize</code>.<br />
+            Eine Gesamtmenge, intern als <code>OneSize</code> gespeichert.
+          </small>
         </div>
 
         <div class="field">
           <label for="skuInput">SKU</label>
-          <input type="text" id="skuInput" placeholder="wird automatisch erzeugt" />
-          <small>Wird aus Kategorie + Artikeltyp erzeugt, kann aber überschrieben werden.</small>
+          <input type="text" id="skuInput" placeholder="auto-generated / wird automatisch erzeugt" />
+          <small>
+            Generated from category + item type, but can be edited.<br />
+            Wird aus Kategorie + Artikeltyp erzeugt, kann aber geändert werden.
+          </small>
         </div>
       </div>
 
       <div class="field">
         <label for="imageUrlInput">image_url</label>
-        <input type="text" id="imageUrlInput" placeholder="wird automatisch auf SKU.png gesetzt" />
-        <small>Wird beim Speichern immer auf <code>SKU.png</code> gesetzt.</small>
+        <input type="text" id="imageUrlInput" placeholder="will be set to SKU.png / wird auf SKU.png gesetzt" />
+        <small>
+          When saving, this is always set to <code>SKU.png</code>.<br />
+          Beim Speichern wird dies immer auf <code>SKU.png</code> gesetzt.
+        </small>
       </div>
 
       <div class="controls">
-        <button id="saveAllBtn">💾 Alles speichern (Foto + JSON)</button>
+        <button id="saveAllBtn">💾 Save all (Photo + JSON) / Alles speichern (Foto + JSON)</button>
       </div>
     </section>
 
-    <!-- JSON Ausgabe -->
+    <!-- JSON OUTPUT -->
     <section>
-      <h2>JSON Vorschau</h2>
+      <h2>JSON preview / JSON-Vorschau</h2>
       <textarea id="jsonOutput" rows="16" readonly></textarea>
     </section>
   </main>
 
   <script>
-    /********** Produkt-Vorlagen (Templates) **********/
+    /********** PRODUCT TEMPLATES / PRODUKT-VORLAGEN **********/
     const productTemplates = {
       "Accessoires & Ausrüstung": {
         "Socken": {
-          name: "Sportsocken",
-          description: "Bequeme Sportsocken mit guter Dämpfung.",
-          subcategory: "Accessoires",
-          type: "Socken",
-          material: "Baumwolle-Polyester",
-          colors: ["Schwarz", "Weiß"],
+          name: "Sportsocken / Sports socks",
+          description: "Bequeme Sportsocken mit guter Dämpfung. / Comfortable sports socks with good cushioning.",
+          subcategory: "Accessoires / Accessories",
+          type: "Socken / Socks",
+          material: "Baumwolle-Polyester / Cotton-Polyester",
+          colors: ["Schwarz / Black", "Weiß / White"],
         },
         "Handschuhe": {
-          name: "Sporthandschuhe",
-          description: "Handschuhe mit Grip für Training und Outdoor.",
-          subcategory: "Accessoires",
-          type: "Handschuhe",
-          material: "Synthetik",
-          colors: ["Schwarz"],
+          name: "Sporthandschuhe / Sports gloves",
+          description: "Handschuhe mit Grip für Training und Outdoor. / Gloves with grip for training and outdoor.",
+          subcategory: "Accessoires / Accessories",
+          type: "Handschuhe / Gloves",
+          material: "Synthetik / Synthetic",
+          colors: ["Schwarz / Black"],
         },
         "Mütze/Schal": {
-          name: "Mütze / Schal",
-          description: "Warme Mütze oder Schal für Outdoor-Sport.",
-          subcategory: "Accessoires",
-          type: "Mütze/Schal",
-          material: "Acryl",
-          colors: ["Schwarz", "Grau"],
+          name: "Mütze / Schal / Beanie / Scarf",
+          description: "Warme Mütze oder Schal für Outdoor-Sport. / Warm beanie or scarf for outdoor sports.",
+          subcategory: "Accessoires / Accessories",
+          type: "Mütze/Schal / Beanie/Scarf",
+          material: "Acryl / Acrylic",
+          colors: ["Schwarz / Black", "Grau / Grey"],
         },
         "Handyhalter": {
-          name: "Handyhalter",
-          description: "Handyhalter für den Arm beim Laufen.",
-          subcategory: "Ausrüstung",
-          type: "Handyhalter",
-          material: "Neopren",
-          colors: ["Schwarz"],
+          name: "Handyhalter / Phone holder",
+          description: "Handyhalter für den Arm beim Laufen. / Phone holder for the arm while running.",
+          subcategory: "Ausrüstung / Equipment",
+          type: "Handyhalter / Phone holder",
+          material: "Neopren / Neoprene",
+          colors: ["Schwarz / Black"],
         },
         "Karategürtel": {
-          name: "Karategürtel",
-          description: "Robuster Gürtel für Karate und andere Kampfsportarten.",
-          subcategory: "Ausrüstung",
-          type: "Karategürtel",
-          material: "Baumwolle",
-          colors: ["Weiß", "Gelb", "Orange", "Grün", "Blau", "Braun", "Schwarz"],
+          name: "Karategürtel / Karate belt",
+          description: "Robuster Gürtel für Karate und andere Kampfsportarten. / Robust belt for karate and other martial arts.",
+          subcategory: "Ausrüstung / Equipment",
+          type: "Karategürtel / Karate belt",
+          material: "Baumwolle / Cotton",
+          colors: ["Weiß / White", "Gelb / Yellow", "Orange", "Grün / Green", "Blau / Blue", "Braun / Brown", "Schwarz / Black"],
         },
         "Taschen": {
-          name: "Sporttasche",
-          description: "Geräumige Tasche für Sportausrüstung.",
-          subcategory: "Ausrüstung",
-          type: "Tasche",
+          name: "Sporttasche / Sports bag",
+          description: "Geräumige Tasche für Sportausrüstung. / Spacious bag for sports equipment.",
+          subcategory: "Ausrüstung / Equipment",
+          type: "Tasche / Bag",
           material: "Polyester",
-          colors: ["Schwarz", "Blau"],
+          colors: ["Schwarz / Black", "Blau / Blue"],
         },
         "Judo": {
-          name: "Judo-Ausrüstung",
-          description: "Zubehör für Judo-Training und Wettkampf.",
-          subcategory: "Ausrüstung",
+          name: "Judo-Ausrüstung / Judo equipment",
+          description: "Zubehör für Judo-Training und Wettkampf. / Accessories for judo training and competition.",
+          subcategory: "Ausrüstung / Equipment",
           type: "Judo",
-          material: "Mischgewebe",
-          colors: ["Weiß"],
+          material: "Mischgewebe / Mixed fabric",
+          colors: ["Weiß / White"],
         },
         "Cappy": {
-          name: "Cap",
-          description: "Leichte Cap zum Sport oder Alltag.",
-          subcategory: "Accessoires",
-          type: "Cap",
-          material: "Baumwolle",
-          colors: ["Schwarz", "Navy"],
+          name: "Cap / Cappy",
+          description: "Leichte Cap zum Sport oder Alltag. / Lightweight cap for sports or everyday use.",
+          subcategory: "Accessoires / Accessories",
+          type: "Cap / Cappy",
+          material: "Baumwolle / Cotton",
+          colors: ["Schwarz / Black", "Navy"],
         }
       },
       "Bekleidung": {
         "Schuhe": {
-          name: "Sportschuhe",
-          description: "Leichte, bequeme Sportschuhe für Training und Alltag.",
-          subcategory: "Schuhe",
-          type: "Schuhe",
-          material: "Synthetik",
-          colors: ["Schwarz", "Weiß"],
+          name: "Sportschuhe / Sports shoes",
+          description: "Leichte, bequeme Sportschuhe für Training und Alltag. / Lightweight, comfortable sports shoes for training and everyday use.",
+          subcategory: "Schuhe / Shoes",
+          type: "Schuhe / Shoes",
+          material: "Synthetik / Synthetic",
+          colors: ["Schwarz / Black", "Weiß / White"],
         },
         "Gymnastik (Tops & Leggings)": {
-          name: "Gymnastik-Outfit",
-          description: "Set aus Gymnastik-Top und Leggings.",
+          name: "Gymnastik-Outfit / Gym outfit",
+          description: "Set aus Gymnastik-Top und Leggings. / Set of gym top and leggings.",
           subcategory: "Gymnastik",
           type: "Tops & Leggings",
-          material: "Elasthan-Mischung",
-          colors: ["Schwarz", "Lila", "Blau"],
+          material: "Elasthan-Mischung / Elastane blend",
+          colors: ["Schwarz / Black", "Lila / Purple", "Blau / Blue"],
         },
         "Leibchen": {
-          name: "Leibchen",
-          description: "Standard-Leibchen für Training und Teamsport.",
-          subcategory: "Oberteile",
-          type: "Leibchen",
+          name: "Leibchen / Training bib",
+          description: "Standard-Leibchen für Training und Teamsport. / Standard training bib for practice and team sports.",
+          subcategory: "Oberteile / Tops",
+          type: "Leibchen / Bib",
           material: "Polyester",
-          colors: ["Gelb", "Rot", "Blau"],
+          colors: ["Gelb / Yellow", "Rot / Red", "Blau / Blue"],
         },
         "Oberteile": {
-          name: "Sport-Oberteil",
-          description: "Oberteil für verschiedene Sportarten.",
-          subcategory: "Oberteile",
-          type: "Oberteil",
+          name: "Sport-Oberteil / Sports top",
+          description: "Oberteil für verschiedene Sportarten. / Top for various sports.",
+          subcategory: "Oberteile / Tops",
+          type: "Oberteil / Top",
           material: "Polyester",
-          colors: ["Schwarz", "Blau", "Rot"],
+          colors: ["Schwarz / Black", "Blau / Blue", "Rot / Red"],
         },
         "Unterteile": {
-          name: "Sport-Unterteil",
-          description: "Bequeme Hose/Shorts für Sport und Training.",
-          subcategory: "Unterteile",
-          type: "Unterteil",
+          name: "Sport-Unterteil / Sports bottom",
+          description: "Bequeme Hose/Shorts für Sport und Training. / Comfortable pants/shorts for sports and training.",
+          subcategory: "Unterteile / Bottoms",
+          type: "Unterteil / Bottom",
           material: "Polyester",
-          colors: ["Schwarz", "Navy"],
+          colors: ["Schwarz / Black", "Navy"],
         },
         "Sport-BHs": {
-          name: "Sport-BH",
-          description: "Stützender Sport-BH für Training und Alltag.",
-          subcategory: "Unterwäsche",
-          type: "Sport-BH",
-          material: "Elasthan-Mischung",
-          colors: ["Schwarz", "Grau"],
+          name: "Sport-BH / Sports bra",
+          description: "Stützender Sport-BH für Training und Alltag. / Supportive sports bra for training and daily wear.",
+          subcategory: "Unterwäsche / Underwear",
+          type: "Sport-BH / Sports bra",
+          material: "Elasthan-Mischung / Elastane blend",
+          colors: ["Schwarz / Black", "Grau / Grey"],
         },
         "Badeanzüge": {
-          name: "Badeanzug",
-          description: "Sportlicher Badeanzug für Schwimmtraining.",
-          subcategory: "Schwimmen",
-          type: "Badeanzug",
-          material: "Polyamid-Elasthan",
-          colors: ["Blau", "Schwarz"],
+          name: "Badeanzug / Swimsuit",
+          description: "Sportlicher Badeanzug für Schwimmtraining. / Sporty swimsuit for swim training.",
+          subcategory: "Schwimmen / Swim",
+          type: "Badeanzug / Swimsuit",
+          material: "Polyamid-Elasthan / Polyamide-elastane",
+          colors: ["Blau / Blue", "Schwarz / Black"],
         },
         "Bikini": {
           name: "Bikini",
-          description: "Sportlicher Bikini für Strand und Schwimmbad.",
-          subcategory: "Schwimmen",
+          description: "Sportlicher Bikini für Strand und Schwimmbad. / Sporty bikini for beach and pool.",
+          subcategory: "Schwimmen / Swim",
           type: "Bikini",
-          material: "Polyamid-Elasthan",
-          colors: ["Bunt", "Schwarz"],
+          material: "Polyamid-Elasthan / Polyamide-elastane",
+          colors: ["Bunt / Multi", "Schwarz / Black"],
         }
       }
     };
@@ -400,14 +413,14 @@
         itemTypeSelect.disabled = true;
         const opt = document.createElement('option');
         opt.value = '';
-        opt.textContent = 'Bitte zuerst Kategorie wählen ...';
+        opt.textContent = 'Choose category first / Bitte zuerst Kategorie wählen ...';
         itemTypeSelect.appendChild(opt);
         return;
       }
       itemTypeSelect.disabled = false;
       const placeholder = document.createElement('option');
       placeholder.value = '';
-      placeholder.textContent = 'Bitte Artikeltyp wählen ...';
+      placeholder.textContent = 'Choose item type / Bitte Artikeltyp wählen ...';
       itemTypeSelect.appendChild(placeholder);
 
       const types = Object.keys(productTemplates[category]);
@@ -453,7 +466,7 @@
       skuDirty = skuInput.value.trim().length > 0;
     });
 
-    /********** Kamera-Logik (Back Camera bevorzugt) **********/
+    /********** CAMERA LOGIC / KAMERA-LOGIK (BACK CAMERA) **********/
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const startCamBtn = document.getElementById('startCamBtn');
@@ -488,18 +501,17 @@
         video.srcObject = mediaStream;
         captureBtn.disabled = false;
       } catch (err) {
-        alert('Kamera konnte nicht gestartet werden: ' + err.message);
+        alert('Camera could not be started: ' + err.message + '\nKamera konnte nicht gestartet werden: ' + err.message);
       }
     });
 
-    // Foto aufnehmen – SKU wird bei Bedarf vorher erzeugt
+    // TAKE PHOTO / FOTO AUFNEHMEN
     captureBtn.addEventListener('click', () => {
       if (!mediaStream) {
-        alert('Bitte zuerst die Kamera starten.');
+        alert('Please start the camera first.\nBitte zuerst die Kamera starten.');
         return;
       }
 
-      // sicherstellen, dass es eine SKU gibt, bevor wir einen Namen ableiten
       let sku = skuInput.value.trim();
       const category = categorySelect.value;
       const itemType = itemTypeSelect.value || "PROD";
@@ -526,7 +538,7 @@
 
       canvas.toBlob((blob) => {
         if (!blob) {
-          alert('Fehler beim Erzeugen des Bildes.');
+          alert('Error creating image.\nFehler beim Erzeugen des Bildes.');
           return;
         }
         capturedImageBlob = blob;
@@ -534,21 +546,21 @@
         const url = URL.createObjectURL(blob);
         photoPreview.src = url;
 
-        alert('Foto aufgenommen! Beim Speichern wird der Name aus der aktuellen SKU verwendet.');
+        alert('Photo captured. The current SKU will be used as file name when saving.\nFoto aufgenommen. Die aktuelle SKU wird beim Speichern als Dateiname verwendet.');
       }, 'image/png');
     });
 
-    /********** JSON + Bild speichern (ein Button) **********/
+    /********** SAVE JSON + PHOTO (ONE BUTTON) / SPEICHERN (EIN BUTTON) **********/
     saveAllBtn.addEventListener('click', () => {
       const category = categorySelect.value;
       const itemType = itemTypeSelect.value;
 
       if (!category) {
-        alert('Bitte eine Kategorie wählen.');
+        alert('Please select a category.\nBitte eine Kategorie wählen.');
         return;
       }
       if (!itemType) {
-        alert('Bitte einen Artikeltyp wählen.');
+        alert('Please select an item type.\nBitte einen Artikeltyp wählen.');
         return;
       }
 
@@ -559,17 +571,17 @@
       }
 
       if (!capturedImageBlob) {
-        alert('Bitte zuerst ein Foto aufnehmen, bevor du speicherst.');
+        alert('Please capture a photo before saving.\nBitte zuerst ein Foto aufnehmen, bevor du speicherst.');
         return;
       }
 
       const qty = parseInt(quantityInput.value, 10) || 0;
 
-      // *** EINHEITLICHER NAME: photoName = SKU.png ***
+      // UNIFIED NAME: photoName = SKU.png / EINHEITLICHER NAME: photoName = SKU.png
       const sanitizedSku = sku.replace(/\s+/g, '-');
       const photoFileName = sanitizedSku + '.png';
 
-      // image_url im JSON = exakt derselbe Name
+      // image_url = photoFileName
       const imageUrl = photoFileName;
       imageUrlInput.value = imageUrl;
 
@@ -595,13 +607,13 @@
         stock: {
           "OneSize": qty
         },
-        image_url: imageUrl   // <- genau derselbe Name wie Foto
+        image_url: imageUrl
       };
 
       const jsonString = JSON.stringify([product], null, 2);
       jsonOutput.value = jsonString;
 
-      // JSON speichern (Dateiname = SKU.json)
+      // SAVE JSON (file name = SKU.json)
       const jsonBlob = new Blob([jsonString], { type: 'application/json' });
       const jsonUrl = URL.createObjectURL(jsonBlob);
       const jsonLink = document.createElement('a');
@@ -612,7 +624,7 @@
       document.body.removeChild(jsonLink);
       URL.revokeObjectURL(jsonUrl);
 
-      // Bild speichern (Dateiname = SKU.png)
+      // SAVE IMAGE (file name = SKU.png)
       const imgUrl = URL.createObjectURL(capturedImageBlob);
       const imgLink = document.createElement('a');
       imgLink.href = imgUrl;
