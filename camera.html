@@ -180,12 +180,11 @@
       align-items: center;
       justify-content: center;
       white-space: nowrap;
+      color: #111827;
     }
 
-    .color-btn.selected {
-      background: var(--primary);
-      color: var(--primary-text);
-      border-color: var(--primary);
+    .hidden {
+      display: none;
     }
 
     @media (min-width: 640px) {
@@ -218,9 +217,9 @@
 
     <h1>Product Photo & JSON / Produkt-Foto & JSON</h1>
     <p class="lead">
-      Start camera once, select category & item type, set quantity, size & colours, then hold the item in front
+      Start camera once, select item type, set quantity, size & colours, then hold the item in front
       of the camera and tap “Save all”. The app auto-jumps to the next item type.<br />
-      Kamera einmal starten, Kategorie & Artikeltyp wählen, Menge, Größe & Farben setzen, Artikel vor die Kamera halten
+      Kamera einmal starten, Artikeltyp wählen, Menge, Größe & Farben setzen, Artikel vor die Kamera halten
       und „Alles speichern“ tippen. Die App springt automatisch zum nächsten Artikeltyp.<br />
       <strong>Photo file name / Bildname = SKU.png, image_url = SKU.png</strong>
     </p>
@@ -266,7 +265,7 @@
       <div class="row">
         <div class="field">
           <label for="quantityInput">Stock quantity / Menge im Lager</label>
-          <input type="number" id="quantityInput" min="0" step="1" placeholder="e.g. 84 / z.B. 84" />
+          <input type="number" id="quantityInput" min="0" step="1" placeholder="e.g. 120 / z.B. 120" />
           <small>
             Pre-filled with expected value, change if needed. Stored as <code>OneSize</code>.<br />
             Mit erwarteter Menge vorbelegt, bei Bedarf anpassen. Intern als <code>OneSize</code> gespeichert.
@@ -274,24 +273,24 @@
         </div>
 
         <div class="field">
-          <label for="skuInput">SKU</label>
-          <input type="text" id="skuInput" placeholder="auto-generated / wird automatisch erzeugt" />
+          <label for="sizeInput">Size / Größe</label>
+          <input type="text" id="sizeInput" placeholder="e.g. 42 (EU), 38 (EU), M, OneSize" />
           <small>
-            Generated from category + item type, but can be edited.<br />
-            Wird aus Kategorie + Artikeltyp erzeugt, kann aber überschrieben werden.
+            Used to fill the <code>sizes</code> array in JSON (single value, e.g. EU size).<br />
+            Wird für das <code>sizes</code>-Array im JSON verwendet (ein Wert, z.B. EU-Größe).
           </small>
         </div>
       </div>
 
-      <div class="row">
-        <div class="field">
-          <label for="sizeInput">Size / Größe</label>
-          <input type="text" id="sizeInput" placeholder="e.g. M, 40, OneSize" />
-          <small>
-            Used to fill the <code>sizes</code> array in JSON (single value).<br />
-            Wird für das <code>sizes</code>-Array im JSON verwendet (ein Wert).
-          </small>
-        </div>
+      <!-- Hidden SKU + image_url (still used internally) -->
+      <div class="field hidden">
+        <label for="skuInput">SKU</label>
+        <input type="text" id="skuInput" />
+      </div>
+
+      <div class="field hidden">
+        <label for="imageUrlInput">image_url</label>
+        <input type="text" id="imageUrlInput" />
       </div>
 
       <div class="field">
@@ -303,22 +302,13 @@
         </small>
       </div>
 
-      <div class="field">
-        <label for="imageUrlInput">image_url</label>
-        <input type="text" id="imageUrlInput" placeholder="will be set to SKU.png / wird automatisch auf SKU.png gesetzt" />
-        <small>
-          When saving, this is always set to <code>SKU.png</code>.<br />
-          Beim Speichern wird dies immer auf <code>SKU.png</code> gesetzt.
-        </small>
-      </div>
-
       <div class="controls">
         <button id="saveAllBtn">💾 Save all (Photo + JSON) / Alles speichern (Foto + JSON)</button>
       </div>
     </section>
 
-    <!-- JSON output -->
-    <section>
+    <!-- JSON output (hidden) -->
+    <section id="jsonSection" class="hidden">
       <h2>JSON preview / JSON-Vorschau</h2>
       <textarea id="jsonOutput" rows="16" readonly></textarea>
     </section>
@@ -327,16 +317,16 @@
   <script>
     /********** Colour options: rainbow (VIGBYOR) + grey/white/black **********/
     const colorOptions = [
-      { id: "violet", label: "Violett / Violet" },
-      { id: "indigo", label: "Indigo" },
-      { id: "blue", label: "Blau / Blue" },
-      { id: "green", label: "Grün / Green" },
-      { id: "yellow", label: "Gelb / Yellow" },
-      { id: "orange", label: "Orange" },
-      { id: "red", label: "Rot / Red" },
-      { id: "gray", label: "Grau / Grey" },
-      { id: "white", label: "Weiß / White" },
-      { id: "black", label: "Schwarz / Black" },
+      { id: "violet", label: "Violett / Violet", css: "#8b5cf6" },
+      { id: "indigo", label: "Indigo", css: "#4b0082" },
+      { id: "blue", label: "Blau / Blue", css: "#3b82f6" },
+      { id: "green", label: "Grün / Green", css: "#22c55e" },
+      { id: "yellow", label: "Gelb / Yellow", css: "#eab308" },
+      { id: "orange", label: "Orange", css: "#f97316" },
+      { id: "red", label: "Rot / Red", css: "#ef4444" },
+      { id: "gray", label: "Grau / Grey", css: "#6b7280" },
+      { id: "white", label: "Weiß / White", css: "#ffffff" },
+      { id: "black", label: "Schwarz / Black", css: "#000000" },
     ];
 
     const baseColors = colorOptions.map(o => o.label);
@@ -548,7 +538,26 @@
       location.reload();
     });
 
-    /********** Colour button init **********/
+    /********** Colour buttons **********/
+    function setColorButtonVisualState(btn, selected) {
+      const css = btn.dataset.colorCss;
+      if (selected) {
+        btn.style.backgroundColor = css;
+        btn.style.borderColor = css;
+        const cssLower = css.toLowerCase();
+        // Dark text on very light colours, white on others
+        if (cssLower === "#ffffff" || cssLower === "#eab308") {
+          btn.style.color = "#111827";
+        } else {
+          btn.style.color = "#ffffff";
+        }
+      } else {
+        btn.style.backgroundColor = "#f3f4f6";
+        btn.style.borderColor = "#d1d5db";
+        btn.style.color = "#111827";
+      }
+    }
+
     function initColorButtons() {
       colorButtonsContainer.innerHTML = "";
       colorOptions.forEach(opt => {
@@ -557,8 +566,12 @@
         btn.className = "color-btn";
         btn.textContent = opt.label;
         btn.dataset.colorLabel = opt.label;
+        btn.dataset.colorCss = opt.css;
+        setColorButtonVisualState(btn, false);
         btn.addEventListener('click', () => {
-          btn.classList.toggle('selected');
+          const willSelect = !btn.classList.contains('selected');
+          btn.classList.toggle('selected', willSelect);
+          setColorButtonVisualState(btn, willSelect);
         });
         colorButtonsContainer.appendChild(btn);
       });
@@ -569,6 +582,7 @@
         .map(btn => btn.dataset.colorLabel);
     }
 
+    /********** Dropdown population & defaults **********/
     function populateItemTypes(category) {
       itemTypeSelect.innerHTML = '';
       if (!category || !productTemplates[category]) {
@@ -603,6 +617,17 @@
       }
     }
 
+    function applyDefaultSize(category, itemType) {
+      // Try to use EU-like suggestions where it makes sense
+      if (category === "Bekleidung" && itemType === "Schuhe") {
+        sizeInput.value = "42 (EU)";
+      } else if (category === "Bekleidung") {
+        sizeInput.value = "M (EU)";
+      } else {
+        sizeInput.value = "OneSize";
+      }
+    }
+
     function generateSku(category, itemType) {
       const prefixMap = {
         "Accessoires & Ausrüstung": "ACC",
@@ -616,16 +641,19 @@
         .replace(/Ü/g, "UE")
         .replace(/ß/g, "SS")
         .replace(/[^A-Z0-9]+/g, '-');
-      const random = Math.floor(100 + Math.random() * 900);
+      // 5 random digits at the end
+      const random = Math.floor(10000 + Math.random() * 90000); // 10000-99999
       return `${prefix}-${typePart}-${random}`;
     }
 
     categorySelect.addEventListener('change', () => {
-      populateItemTypes(categorySelect.value);
-      if (!skuDirty && categorySelect.value) {
-        skuInput.value = generateSku(categorySelect.value, itemTypeSelect.value || "PROD");
+      const category = categorySelect.value;
+      populateItemTypes(category);
+      if (!skuDirty && category) {
+        skuInput.value = generateSku(category, itemTypeSelect.value || "PROD");
       }
       quantityInput.value = "";
+      sizeInput.value = "";
     });
 
     itemTypeSelect.addEventListener('change', () => {
@@ -636,6 +664,7 @@
       }
       if (category && itemType) {
         applyDefaultQuantity(category, itemType);
+        applyDefaultSize(category, itemType);
       }
     });
 
@@ -672,7 +701,7 @@
     startCamBtn.addEventListener('click', async () => {
       try {
         if (mediaStream) {
-          mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream.getTracks().forEach(t => t.stop());
         }
         await startCameraWithBackFacing();
         video.srcObject = mediaStream;
@@ -685,7 +714,7 @@
     function captureFrame(onSuccess) {
       if (!mediaStream) {
         alert('Please start the camera first.\nBitte zuerst die Kamera starten.');
-      return;
+        return;
       }
       const videoTrack = mediaStream.getVideoTracks()[0];
       const settings = videoTrack.getSettings();
@@ -724,7 +753,7 @@
         itemTypeSelect.selectedIndex = currentIndex + 1;
         itemTypeSelect.dispatchEvent(new Event('change'));
       } else {
-        // last type, do nothing
+        // last type, stay on it
       }
     }
 
@@ -770,7 +799,6 @@
         colors: [...baseColors]
       };
 
-      // Capture frame AND then save JSON + photo
       captureFrame((blob) => {
         capturedImageBlob = blob;
 
@@ -794,7 +822,9 @@
         };
 
         const jsonString = JSON.stringify([product], null, 2);
-        jsonOutput.value = jsonString;
+        if (jsonOutput) {
+          jsonOutput.value = jsonString;
+        }
 
         // Save JSON
         const jsonBlob = new Blob([jsonString], { type: 'application/json' });
@@ -817,31 +847,46 @@
         document.body.removeChild(imgLink);
         URL.revokeObjectURL(imgUrl);
 
-        // Auto-jump to next type for speed
+        // Auto-jump to next type
         advanceToNextItemType();
       });
     });
 
-    /********** Init defaults for everything on load **********/
+    /********** Init defaults: start with Clothing -> Shoes **********/
     function initDefaults() {
-      // default size
-      sizeInput.value = "OneSize";
+      // Init colour buttons
+      initColorButtons();
 
-      // Default category: first real one (Accessoires & Ausrüstung)
-      if (categorySelect.options.length > 1) {
-        categorySelect.selectedIndex = 1;
-        categorySelect.dispatchEvent(new Event('change'));
-
-        // After types are populated, choose first real item type
-        if (itemTypeSelect.options.length > 1) {
-          itemTypeSelect.selectedIndex = 1;
-          itemTypeSelect.dispatchEvent(new Event('change'));
+      // Default category: Bekleidung
+      let clothingIndex = -1;
+      for (let i = 0; i < categorySelect.options.length; i++) {
+        if (categorySelect.options[i].value === "Bekleidung") {
+          clothingIndex = i;
+          break;
         }
       }
+      if (clothingIndex !== -1) {
+        categorySelect.selectedIndex = clothingIndex;
+        categorySelect.dispatchEvent(new Event('change'));
+      }
+
+      // After types are populated, choose "Schuhe"
+      setTimeout(() => {
+        let shoesIndex = -1;
+        for (let i = 0; i < itemTypeSelect.options.length; i++) {
+          if (itemTypeSelect.options[i].value === "Schuhe") {
+            shoesIndex = i;
+            break;
+          }
+        }
+        if (shoesIndex !== -1) {
+          itemTypeSelect.selectedIndex = shoesIndex;
+          itemTypeSelect.dispatchEvent(new Event('change'));
+        }
+      }, 0);
     }
 
-    // init color buttons + defaults
-    initColorButtons();
+    // Run init
     initDefaults();
   </script>
 </body>
