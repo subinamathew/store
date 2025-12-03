@@ -2,158 +2,255 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Einfache Produkt-App (Foto + JSON)</title>
+  <title>Einfache Produkt-App (Mobile)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --primary: #1f2933;
+      --primary-text: #ffffff;
+      --border: #d0d7de;
+      --bg-soft: #f7f9fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 20px;
+      margin: 0;
+      padding: 12px;
+      background: var(--bg-soft);
+    }
+
+    main {
       max-width: 900px;
+      margin: 0 auto 40px;
     }
+
     h1 {
-      margin-bottom: 0.5rem;
+      margin: 0 0 0.25rem;
+      font-size: 1.4rem;
+      text-align: center;
     }
+
+    p.lead {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      text-align: center;
+      color: #4b5563;
+    }
+
     section {
-      margin-top: 1.5rem;
+      margin-top: 1rem;
       padding: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
     }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+
     #video, #photoPreview {
-      max-width: 100%;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      width: 100%;
+      max-height: 280px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      object-fit: cover;
+      background: #000;
     }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
     .row {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
     }
+
     .field {
       margin-bottom: 0.75rem;
-      min-width: 200px;
-      flex: 1;
+      flex: 1 1 100%;
     }
+
     label {
       display: block;
       font-weight: 600;
       margin-bottom: 0.25rem;
+      font-size: 0.9rem;
     }
+
     select,
     input[type="text"],
     input[type="number"],
     textarea {
       width: 100%;
-      padding: 0.4rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+      padding: 0.6rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 1rem; /* verhindert iOS-Zoom */
+      background: #f9fafb;
     }
+
     textarea {
       font-family: "JetBrains Mono", "Fira Code", monospace;
+      resize: vertical;
     }
+
     button {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      border: 1px solid #333;
-      background: #333;
-      color: #fff;
+      padding: 0.8rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--primary);
+      color: var(--primary-text);
       cursor: pointer;
-      margin-right: 0.5rem;
-      margin-top: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%; /* big tappable buttons */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
     }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.6;
       cursor: not-allowed;
     }
+
     small {
       display: block;
-      color: #555;
+      color: #6b7280;
       margin-top: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    #jsonOutput {
+      width: 100%;
+      padding: 0.6rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.8rem;
+      background: #0b1020;
+      color: #e5e7eb;
+      min-height: 220px;
+    }
+
+    @media (min-width: 640px) {
+      .row .field {
+        flex: 1 1 calc(50% - 0.5rem);
+      }
+
+      button {
+        width: auto; /* on larger screens, buttons shrink */
+      }
+
+      .controls {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .controls button {
+        flex: 1;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Produkt-Foto aufnehmen & JSON erzeugen (einfach)</h1>
-  <p>
-    1. Kategorie & Artikeltyp auswählen, Menge eintragen.<br />
-    2. Kamera starten → Foto aufnehmen → Foto speichern.<br />
-    3. JSON erzeugen → JSON speichern.<br />
-    Alle Detailfelder (Name, Beschreibung, etc.) werden automatisch aus Vorlagen erzeugt.
-  </p>
+  <main>
+    <h1>Produkt-Foto & JSON (Mobile)</h1>
+    <p class="lead">
+      Wähle Kategorie & Artikeltyp, trage eine Menge ein, mache ein Foto mit der Rückkamera
+      und lade JSON + Bild herunter.
+    </p>
 
-  <!-- Kamera / Foto -->
-  <section>
-    <h2>Kamera & Foto</h2>
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas" style="display:none;"></canvas>
-    <div>
-      <button id="startCamBtn">Kamera starten</button>
-      <button id="captureBtn" disabled>Foto aufnehmen</button>
-      <button id="downloadPhotoBtn" disabled>Foto speichern</button>
-    </div>
-    <small>
-      Hinweis: Der Browser fragt nach Kamerazugriff. Beim Speichern bestimmst du selbst den Zielordner auf deinem Rechner.
-    </small>
-    <h3>Vorschau</h3>
-    <img id="photoPreview" alt="Aufgenommenes Foto" />
-  </section>
+    <!-- Kamera / Foto -->
+    <section>
+      <h2>Kamera & Foto</h2>
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" style="display:none;"></canvas>
+      <div class="controls">
+        <button id="startCamBtn">📷 Kamera (Rückseite) starten</button>
+        <button id="captureBtn" disabled>📸 Foto aufnehmen</button>
+        <button id="downloadPhotoBtn" disabled class="secondary">⬇️ Foto speichern</button>
+      </div>
+      <small>
+        Tipp: Auf dem Smartphone am besten über HTTPS öffnen, sonst blocken manche Browser die Kamera.
+      </small>
+      <h3 style="margin-top: 0.9rem; font-size: 0.95rem;">Vorschau</h3>
+      <img id="photoPreview" alt="Aufgenommenes Foto" />
+    </section>
 
-  <!-- Produkt-Auswahl (DROPDOWN) -->
-  <section>
-    <h2>Produkt-Auswahl</h2>
-    <div class="row">
-      <div class="field">
-        <label for="categorySelect">Kategorie</label>
-        <select id="categorySelect">
-          <option value="">Bitte wählen ...</option>
-          <option value="Accessoires & Ausrüstung">Accessoires &amp; Ausrüstung</option>
-          <option value="Bekleidung">Bekleidung</option>
-        </select>
+    <!-- Produkt-Auswahl (Dropdown) -->
+    <section>
+      <h2>Produkt-Auswahl</h2>
+      <div class="row">
+        <div class="field">
+          <label for="categorySelect">Kategorie</label>
+          <select id="categorySelect">
+            <option value="">Bitte wählen ...</option>
+            <option value="Accessoires & Ausrüstung">Accessoires &amp; Ausrüstung</option>
+            <option value="Bekleidung">Bekleidung</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="itemTypeSelect">Artikeltyp</label>
+          <select id="itemTypeSelect" disabled>
+            <option value="">Bitte zuerst Kategorie wählen ...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="quantityInput">Menge im Lager</label>
+          <input type="number" id="quantityInput" min="0" step="1" placeholder="z.B. 84" />
+          <small>Eine Gesamtmenge, intern als <code>OneSize</code> gespeichert.</small>
+        </div>
+
+        <div class="field">
+          <label for="skuInput">SKU</label>
+          <input type="text" id="skuInput" placeholder="wird automatisch erzeugt" />
+          <small>Wird aus Kategorie + Artikeltyp erzeugt, kann aber überschrieben werden.</small>
+        </div>
       </div>
 
       <div class="field">
-        <label for="itemTypeSelect">Artikeltyp</label>
-        <select id="itemTypeSelect" disabled>
-          <option value="">Bitte zuerst Kategorie wählen ...</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label for="quantityInput">Menge im Lager</label>
-        <input type="number" id="quantityInput" min="0" step="1" placeholder="z.B. 84" />
-        <small>Nur eine Gesamtmenge, intern wird <code>OneSize</code> verwendet.</small>
+        <label for="imageUrlInput">image_url</label>
+        <input type="text" id="imageUrlInput" placeholder="wird nach Fotoaufnahme auf &lt;SKU&gt;.png gesetzt" />
+        <small>Dateiname des Bildes, optional mit Pfad/URL.</small>
       </div>
 
-      <div class="field">
-        <label for="skuInput">SKU</label>
-        <input type="text" id="skuInput" placeholder="wird automatisch erzeugt" />
-        <small>Wird aus Kategorie + Artikeltyp erzeugt, kann aber überschrieben werden.</small>
+      <div class="controls">
+        <button id="generateJsonBtn">🧾 JSON erzeugen</button>
+        <button id="downloadJsonBtn" disabled class="secondary">⬇️ JSON speichern</button>
       </div>
-    </div>
+    </section>
 
-    <div class="field">
-      <label for="imageUrlInput">image_url</label>
-      <input type="text" id="imageUrlInput" placeholder="wird nach Fotoaufnahme auf &lt;SKU&gt;.png gesetzt" />
-      <small>Nach Fotoaufnahme automatisch gefüllt (Dateiname). Du kannst den Pfad/URL anpassen.</small>
-    </div>
-
-    <div>
-      <button id="generateJsonBtn">JSON erzeugen</button>
-      <button id="downloadJsonBtn" disabled>JSON speichern</button>
-    </div>
-  </section>
-
-  <!-- JSON Ausgabe -->
-  <section>
-    <h2>JSON Vorschau</h2>
-    <textarea id="jsonOutput" rows="18" readonly></textarea>
-  </section>
+    <!-- JSON Ausgabe -->
+    <section>
+      <h2>JSON Vorschau</h2>
+      <textarea id="jsonOutput" rows="16" readonly></textarea>
+    </section>
+  </main>
 
   <script>
     /********** Produkt-Vorlagen (Templates) **********/
-    // Du kannst diese Texte gerne anpassen/erweitern.
     const productTemplates = {
       "Accessoires & Ausrüstung": {
         "Socken": {
@@ -359,7 +456,7 @@
       skuDirty = skuInput.value.trim().length > 0;
     });
 
-    /********** Kamera-Logik **********/
+    /********** Kamera-Logik (Back Camera bevorzugt) **********/
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const startCamBtn = document.getElementById('startCamBtn');
@@ -371,10 +468,30 @@
     let capturedImageBlob = null;
     let capturedImageFilename = null;
 
-    // Kamera starten
+    async function startCameraWithBackFacing() {
+      // bevorzugt Rückkamera (environment), fallback auf Standardkamera
+      const envConstraints = {
+        video: {
+          facingMode: { ideal: "environment" }
+        },
+        audio: false
+      };
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(envConstraints);
+        return;
+      } catch (err) {
+        console.warn("Environment camera failed, falling back to default:", err);
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+    }
+
     startCamBtn.addEventListener('click', async () => {
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        if (mediaStream) {
+          // Falls bereits läuft, erst stoppen
+          mediaStream.getTracks().forEach(t => t.stop());
+        }
+        await startCameraWithBackFacing();
         video.srcObject = mediaStream;
         captureBtn.disabled = false;
       } catch (err) {
@@ -404,14 +521,12 @@
         }
         capturedImageBlob = blob;
 
-        // Dateiname aus SKU oder Fallback
         const skuVal = (skuInput.value || 'produkt-foto').trim().replace(/\s+/g, '-');
         capturedImageFilename = skuVal + '.png';
 
         const url = URL.createObjectURL(blob);
         photoPreview.src = url;
 
-        // image_url Feld automatisch setzen, damit JSON dazu passt
         imageUrlInput.value = capturedImageFilename;
 
         downloadPhotoBtn.disabled = false;
@@ -453,7 +568,6 @@
       const qty = parseInt(quantityInput.value, 10) || 0;
       const sku = skuInput.value.trim() || generateSku(category, itemType);
 
-      // image_url: wenn leer, auf <SKU>.png setzen
       let imageUrl = imageUrlInput.value.trim();
       if (!imageUrl) {
         imageUrl = sku.replace(/\s+/g, '-') + '.png';
@@ -485,8 +599,7 @@
         image_url: imageUrl
       };
 
-      const jsonArray = [product];
-      jsonOutput.value = JSON.stringify(jsonArray, null, 2);
+      jsonOutput.value = JSON.stringify([product], null, 2);
       downloadJsonBtn.disabled = false;
     });
 
